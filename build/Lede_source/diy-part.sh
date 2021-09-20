@@ -32,6 +32,12 @@ sed -i 's/PATCHVER:=5.4/PATCHVER:=5.10/g' target/linux/x86/Makefile             
 
 curl -fsSL  https://raw.githubusercontent.com/279437541/openwrt-package/usb/block/10-mount > files/etc/hotplug.d/block/10-mount  #USB驱动
 
+# 在线更新删除不想保留固件的某个文件，在EOF跟EOF直接加入删除代码，比如： rm /etc/config/luci
+
+cat >$DELETE <<-EOF
+rm /etc/rc.local
+EOF
+
 
 # K3专用，编译K3的时候只会出K3固件
 
