@@ -36,6 +36,7 @@ curl -fsSL  https://raw.githubusercontent.com/279437541/openwrt-package/usb/bloc
 
 cat >$DELETE <<-EOF
 rm /etc/rc.local
+rm /etc/bench.log
 EOF
 
 
