@@ -30,7 +30,7 @@ sed -i '/CYXluq4wUazHjmCDBCqXF/d' $ZZZ                                          
 # 设置打包固件的机型，内核组合（请看说明）
 cat >$GITHUB_WORKSPACE/amlogic_openwrt <<-EOF
 amlogic_model=s905d
-amlogic_kernel=5.12.12
+amlogic_kernel=5.10.70_5.4.150
 rootfs_size=1200
 EOF
 
