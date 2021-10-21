@@ -1,30 +1,30 @@
 #
 #
-# 编译固件所用，不带SSH连接配置固件了
+# 感谢p3terx大神的一键编译脚本
+# 
+# Copyright (C) 2019 P3TERX <https://p3terx.com>
+# <https://github.com/P3TERX/Actions-OpenWrt.git>
 #
-# 需要配文件请用 configure.yml 先配置好文件再编译
-#
-# 把定时更新固件发布到云端或者发布固件都需要REPO_TOKEN密匙
-#
-# 同一个仓库只需要存入一次密匙即可，这密匙基本是万能的，什么都能用上
-#
-# REPO_TOKEN密匙制作教程：https://git.io/jm.md
-#
-#
-
-
-name: 编译OpenWrt固件
+name: 编译OpenWrtx86-64固件
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
-    paths:
-      - 'build/Lede_source/start-up/start'
+    inputs:
+      ssh:
+        description: 'SSH远程'
+        required: false
+        default: 'ssh-actions'
+      older-actions:
+        description: 'true-actions改true开启清理Actions空间'
+        required: false
+        default: 'true-actions'
+      older-releases:
+        description: 'true-actions改true开启删除releases'
+        required: false
+        default: 'true-actions'
 
 # 定时触发开始编译(把下面两个#去掉开启,时间设置请看定时编译说明)
-#  schedule:
-#   - cron: 0 16 */2 * *
+  schedule:
+   - cron: 0 3 */3 * *
 
 env:
   Github: https://github.com/${{github.repository}}
@@ -32,7 +32,6 @@ env:
   Apidz: ${{github.repository}}
   Run_number: ${{github.run_number}}
   Run_workflow: ${{github.workflow}}
-  REPO_TOKEN: ${{ secrets.REPO_TOKEN }}
   TZ: Asia/Shanghai
 
 jobs:
@@ -67,16 +66,14 @@ jobs:
         echo "UPLOAD_RELEASE=${UPLOAD_RELEASE}" >> $GITHUB_ENV
         echo "SERVERCHAN_SCKEY=${SERVERCHAN_SCKEY}" >> $GITHUB_ENV
         echo "REGULAR_UPDATE=${REGULAR_UPDATE}" >> $GITHUB_ENV
-        echo "USE_CACHEWRTBUILD=${USE_CACHEWRTBUILD}" >> $GITHUB_ENV
         echo "BY_INFORMATION=${BY_INFORMATION}" >> $GITHUB_ENV
-        echo "AUTOMATIC_AMLOGIC=${AUTOMATIC_AMLOGIC}" >> $GITHUB_ENV
         echo "CangKu=${Apidz##*/}" >> $GITHUB_ENV
-        echo "Modelfile=${{matrix.target}}" >> $GITHUB_ENV 
+        echo "Modelfile=${{matrix.target}}" >> $GITHUB_ENV
 
     - name: 公 告
       run: |
         echo
-        git clone --depth 1 -b main https://github.com/281677160/common build/common > /dev/null 2>&1
+        git clone --depth 1 -b main https://github.com/shidahuilang/common build/common > /dev/null 2>&1
         chmod -R +x "${GITHUB_WORKSPACE}/build/common"
         if [[ "${REPO_BRANCH}" == "master" ]]; then
           echo "ZZZ=package/lean/default-settings/files/zzz-default-settings" >> $GITHUB_ENV
@@ -93,11 +90,29 @@ jobs:
         fi
         echo "NETIP=package/base-files/files/etc/networkip" >> $GITHUB_ENV
         echo "DELETE=package/base-files/files/etc/deletefile" >> $GITHUB_ENV
-        if [ -n "$(ls -A build/common/0930gg 2>/dev/null)" ]; then
+        if [ -n "$(ls -A build/common/0809gg 2>/dev/null)" ]; then
           source build/common/common.sh && Diy_gonggao
         else
           source build/common/common.sh && Diy_tongzhi
         fi
+        
+    - name: 清理Actions空间
+      if: env.OLDER_WORKFLOW == 'true' || (github.event.inputs.older-actions == 'true')
+      uses: Mattraks/delete-workflow-runs@main
+      with:
+        token: ${{ github.token }}
+        repository: ${{ github.repository }}       
+        retain_days: 0.5
+        keep_minimum_runs: 0
+    
+    - name: 删除releases,可设置保留数
+      if: env.OLDER_RELEASES == 'true' || (github.event.inputs.older-releases == 'true')
+      uses: dev-drprasad/delete-older-releases@master
+      with:
+        keep_latest: 5       # 保留多少个发布不删除
+        delete_tags: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }}
 
     - name: 电报机器人信息通知
       if: env.SERVERCHAN_SCKEY == 'true'
@@ -126,6 +141,8 @@ jobs:
         ln -sf /${{matrix.target}}/openwrt $GITHUB_WORKSPACE/openwrt
         echo "Home=${GITHUB_WORKSPACE}/openwrt" >> $GITHUB_ENV
         echo "PATH1=${GITHUB_WORKSPACE}/openwrt/build/${{matrix.target}}" >> $GITHUB_ENV
+        
+
  
     - name: 加载源,补丁和自定义设置
       run: |
@@ -151,20 +168,25 @@ jobs:
         if [[ "${REGULAR_UPDATE}" == "true" ]]; then
           source "${PATH1}/upgrade.sh" && Diy_Part1
         fi
-    
-    - name: 缓存加速(7天内对应源码相同机型二次编译有效，每次只保留一个源码的缓存)
-      if: env.USE_CACHEWRTBUILD == 'true'
-      uses: klever1988/cachewrtbuild@test
+        
+    - name: 超级加速
+      uses: klever1988/cachewrtbuild@main
       with:
         ccache: 'true'
         prefix: ${{ github.workspace }}/openwrt
+        
+    - name: SSH远程连接（配置固件）
+      uses: danshui-git/debugger-action@master
+      if: env.SSH_ACTIONS == 'true' || (github.event.inputs.ssh == 'ssh' && github.event.inputs.ssh  != 'false')
+      env:
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
 
     - name: 生成配置文件
       run: |
         cd openwrt
         source "${PATH1}/common.sh" && Diy_chajian > /dev/null 2>&1
         make defconfig > /dev/null 2>&1
-        ./scripts/diffconfig.sh > ${GITHUB_WORKSPACE}/config.txt
         echo "TARGET_BOARD=$(awk -F '[="]+' '/TARGET_BOARD/{print $2}' .config)" >> $GITHUB_ENV
         echo "TARGET_SUBTARGET=$(awk -F '[="]+' '/TARGET_SUBTARGET/{print $2}' .config)" >> $GITHUB_ENV
         if [ `grep -c "CONFIG_TARGET_x86_64=y" .config` -eq '1' ]; then
@@ -181,6 +203,7 @@ jobs:
     - name: 编译信息
       run: |
         cd openwrt
+        ./scripts/diffconfig.sh > ${GITHUB_WORKSPACE}/config.txt
         source "${PATH1}/common.sh" && Diy_chuli > /dev/null 2>&1
         if [ "${REGULAR_UPDATE}" == "true" ]; then
           source "${PATH1}/upgrade.sh" && Diy_Part2 > /dev/null 2>&1
@@ -191,8 +214,8 @@ jobs:
         fi
 
     - name: 上传.config配置文件在 github actions
-      if: env.UPLOAD_CONFIG == 'true'
       uses: actions/upload-artifact@v2
+      if: env.UPLOAD_CONFIG == 'true'
       with:
         name: .config_${{ env.CODE }}_${{ env.TARGET_PROFILE }}_${{ env.Compile_Date }}
         path: config.txt
@@ -201,7 +224,6 @@ jobs:
       id: package
       run: |
         cd openwrt
-        make defconfig
         make download -j8
         find dl -size -1024c -exec ls -l {} \;
         find dl -size -1024c -exec rm -f {} \;
@@ -214,11 +236,11 @@ jobs:
         make -j$(nproc) || make -j1 V=s
         echo "::set-output name=status::success"
         echo "date=$(date "+%Y%m%d%H%M%S")" >> $GITHUB_ENV
-        echo "date1=$(date +'%m-%d')" >> $GITHUB_ENV
+        echo "date1=$(date +'%m.%d')" >> $GITHUB_ENV
 
     - name: 上传bin文件夹(固件+ipk)在 github actions
-      if: steps.compile.outputs.status == 'success' && env.UPLOAD_BIN_DIR == 'true'
       uses: actions/upload-artifact@v2
+      if: steps.compile.outputs.status == 'success' && env.UPLOAD_BIN_DIR == 'true'
       with:
         name: filename+ipk_${{ env.CODE }}_${{ env.TARGET_PROFILE }}_${{ env.Compile_Date }}
         path: openwrt/bin
@@ -226,7 +248,7 @@ jobs:
     - name: 整理固件文件夹
       id: organizer
       run: |
-        if [ "${AUTOMATIC_AMLOGIC}" == "true" ]; then
+        if [ "${Modelfile}" == "openwrt_amlogic" ]; then
           source "${PATH1}/common.sh" && Diy_amlogic
         fi
         cd openwrt
@@ -237,15 +259,17 @@ jobs:
         find -name "*manifest*" | xargs -i rm -rf {}
         find -name "*vmlinuz*" | xargs -i rm -rf {}
         find -name "*Image*" | xargs -i rm -rf {}
+        find -name "*rootfs*" | xargs -i rm -rf {}
+        find -name "*kernel*" | xargs -i rm -rf {}
         rm -rf packages
         rename -v "s/^openwrt/${{ env.date1 }}-${{ env.CODE }}/" *
         echo "FIRMWARE=$PWD" >> $GITHUB_ENV
         echo "BOT=TRUE" >> $GITHUB_ENV
         echo "::set-output name=status::success"
-        
+
     - name: 上传固件在 github actions
-      if: steps.organizer.outputs.status == 'success' && env.UPLOAD_FIRMWARE == 'true'
       uses: actions/upload-artifact@v2
+      if: steps.organizer.outputs.status == 'success' && env.UPLOAD_FIRMWARE == 'true'
       with:
         name: ${{ env.OpenWrt_name }}-${{ env.CODE }}-${{ env.TARGET_PROFILE }}-firmware-${{ env.Compile_Date }}
         path: ${{ env.FIRMWARE }}
@@ -271,9 +295,9 @@ jobs:
         ./transfer wet -s -p 16 --no-progress ${FIRMWARE} 2>&1 | tee wetransfer.log
         echo "##### WETRANSFER：$(cat wetransfer.log | grep https | cut -f3 -d" ")" >> update_log.txt
     
-    - name: 发布固件（请先设置好密匙）
-      if: steps.organizer.outputs.status == 'success' && env.UPLOAD_RELEASE == 'true' && env.REPO_TOKEN
+    - name: 发布固件
       uses: ncipollo/release-action@v1
+      if: steps.organizer.outputs.status == 'success' && env.UPLOAD_RELEASE == 'true'
       with:
         name: ${{ env.CODE }}-${{ env.TARGET_PROFILE }}
         tag: ${{ env.date }}
@@ -281,14 +305,14 @@ jobs:
         bodyFile: "update_log.txt"
         artifacts: "${{ env.FIRMWARE }}/*"
         
-    - name: 把定时更新固件发布到云端1（请先设置好密匙）
+    - name: 把定时更新固件发布到云端1
       if: steps.compile.outputs.status == 'success' && env.REGULAR_UPDATE == 'true'
       run: |
        cd openwrt
        source "${PATH1}/upgrade.sh" && Diy_Part3
         
-    - name: 把定时更新固件发布到云端2（请先设置好密匙）
-      if: steps.compile.outputs.status == 'success' && env.REGULAR_UPDATE == 'true' && env.REPO_TOKEN
+    - name: 把定时更新固件发布到云端2
+      if: steps.compile.outputs.status == 'success' && env.REGULAR_UPDATE == 'true'
       uses: svenstaro/upload-release-action@v2
       with:
         repo_token: ${{ secrets.REPO_TOKEN }}
@@ -297,15 +321,15 @@ jobs:
         overwrite: true
         file_glob: true
         
-    - name: 把定时更新固件发布到云端3（请先设置好密匙）
+    - name: 把定时更新固件发布到云端3
       if: steps.compile.outputs.status == 'success' && env.REGULAR_UPDATE == 'true'
       run: |
         mkdir -p Github_Tags
         cd Github_Tags
         wget -q --no-cookie --no-check-certificate https://api.github.com/repos/${{github.repository}}/releases/tags/AutoUpdate -O Github_Tags
         
-    - name: 把定时更新固件发布到云端4（请先设置好密匙）
-      if: steps.compile.outputs.status == 'success' && env.REGULAR_UPDATE == 'true' && env.REPO_TOKEN
+    - name: 把定时更新固件发布到云端4
+      if: steps.compile.outputs.status == 'success' && env.REGULAR_UPDATE == 'true'
       uses: svenstaro/upload-release-action@v2
       with:
         repo_token: ${{ secrets.REPO_TOKEN }}
