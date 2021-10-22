@@ -8,15 +8,29 @@
 
 
 
-echo "close_dhcp" > package/base-files/files/etc/closedhcp                                         # 关闭DHCP服务
-sed -i 's/192.168.1.1/192.168.2.1/g' package/base-files/files/bin/config_generate
-sed -i "/uci commit fstab/a\uci commit network" $ZZZ
+#echo "close_dhcp" > package/base-files/files/etc/closedhcp                                         # 关闭DHCP服务
+#sed -i 's/192.168.1.1/192.168.2.1/g' package/base-files/files/bin/config_generate
+#sed -i "/uci commit fstab/a\uci commit network" $ZZZ
 #sed -i "/uci commit network/i\uci set network.lan.ipaddr='192.168.2.1'" $ZZZ                      # IPv4 地址(openwrt后台地址)
 #sed -i "/uci commit network/i\uci set network.lan.netmask='255.255.255.0'" $ZZZ                   # IPv4 子网掩码
 #sed -i "/uci commit network/i\uci set network.lan.gateway='192.168.2.1'" $ZZZ                     # IPv4 网关
-sed -i "/uci commit network/i\uci set network.lan.broadcast='192.168.2.255'" $ZZZ                 # IPv4 广播
-sed -i "/uci commit network/i\uci set network.lan.dns='114.114.114.114 223.5.5.5'" $ZZZ           # DNS(多个DNS要用空格分开)
-sed -i "/uci commit network/i\uci set network.lan.delegate='0'" $ZZZ                              # 去掉LAN口使用内置的 IPv6 管理
+#sed -i "/uci commit network/i\uci set network.lan.broadcast='192.168.2.255'" $ZZZ                 # IPv4 广播
+#sed -i "/uci commit network/i\uci set network.lan.dns='114.114.114.114 223.5.5.5'" $ZZZ           # DNS(多个DNS要用空格分开)
+#sed -i "/uci commit network/i\uci set network.lan.delegate='0'" $ZZZ                              # 去掉LAN口使用内置的 IPv6 管理
+
+
+cat >$NETIP <<-EOF
+uci set network.lan.ipaddr='192.168.2.1'                                    # IPv4 地址(openwrt后台地址)
+uci set network.lan.netmask='255.255.255.0'                                 # IPv4 子网掩码
+uci set network.lan.gateway='192.168.2.1'                                   # IPv4 网关
+uci set network.lan.broadcast='192.168.2.255'                               # IPv4 广播
+uci set network.lan.dns='223.5.5.5 114.114.114.114'                         # DNS(多个DNS要用空格分开)
+uci set network.lan.delegate='0'                                            # 去掉LAN口使用内置的 IPv6 管理
+uci commit network                                                          # 不要删除跟注释,除非上面全部删除或注释掉了
+#uci set dhcp.lan.ignore='1'                                                 # 关闭DHCP功能
+#uci commit dhcp                                                             # 跟‘关闭DHCP功能’联动,同时启用或者删除跟注释
+uci set system.@system[0].hostname='OpenWrt'                            # 修改主机名称为OpenWrt-123
+EOF
 
 # 关闭IPv6 分配长度
 sed -i '/ip6assign/d' package/base-files/files/bin/config_generate
