@@ -4,7 +4,7 @@
  |_______||   __|_____|__|__||________||__|  |____|
           |__| 
              
-      OpenWrt AutoBuild by Telegram DaHuiLang
+      OpenWrt AutoBuild by DaHuiLang
  -----------------------------------------------------
       %D %V %C  Lede_x86_64
       update   bash /bin/AutoUpdate.sh
