@@ -1,6 +1,6 @@
 
 
-name: 启动lean_r4s编译
+name: lean_r4s
 on:
   workflow_dispatch:
     inputs:
