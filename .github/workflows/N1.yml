@@ -1,6 +1,6 @@
 
 
-name: 启动X86编译
+name: 启动N1编译
 on:
   workflow_dispatch:
     inputs:
