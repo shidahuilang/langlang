@@ -1,6 +1,6 @@
 
 
-name: 启动N1编译
+name: 启动N1
 on:
   workflow_dispatch:
     inputs:
@@ -10,11 +10,11 @@ on:
         default: 'ssh-actions'
       days:
         description: '清理[X]天之前的Actions空间操作记录(可改)'
-        required: true
+        required: false
         default: '17'
       rele:
         description: '保留[X]个Releases不被删除(可改)'
-        required: true
+        required: false
         default: '10'
 
 
