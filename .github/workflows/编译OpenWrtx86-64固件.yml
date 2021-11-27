@@ -10,17 +10,17 @@ on:
   workflow_dispatch:
     inputs:
       ssh:
-        description: 'SSH远程'
-        required: false
+        description: '[ssh-actions]改成[ssh],再按[Run workflow]按钮启动,则开启SSH连接配置固件'
+        required: true
         default: 'ssh-actions'
-      older-actions:
-        description: 'true-actions改true开启清理Actions空间'
+      days:
+        description: '清理[X]天之前的Actions空间操作记录(可改)'
         required: false
-        default: 'true-actions'
-      older-releases:
-        description: 'true-actions改true开启删除releases'
+        default: '7'
+      rele:
+        description: '保留[X]个Releases不被删除(可改)'
         required: false
-        default: 'true-actions'
+        default: '10'
 
 # 定时触发开始编译(把下面两个#去掉开启,时间设置请看定时编译说明)
   schedule:
