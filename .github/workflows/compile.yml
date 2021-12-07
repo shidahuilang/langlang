@@ -177,7 +177,25 @@ jobs:
         if [ "${REGULAR_UPDATE}" == "true" ]; then
           source "${PATH1}/upgrade.sh" && Diy_Part2 > /dev/null 2>&1
         fi
-
+    - name: 编译信息
+      run: |
+        cd openwrt
+        ./scripts/diffconfig.sh > ${GITHUB_WORKSPACE}/config.txt
+        source "${PATH1}/common.sh" && Diy_chuli > /dev/null 2>&1
+        if [ "${REGULAR_UPDATE}" == "true" ]; then
+          source "${PATH1}/upgrade.sh" && Diy_Part2 > /dev/null 2>&1
+        fi
+        if [ "${BY_INFORMATION}" == "true" ]; then
+          source "${PATH1}/upgrade.sh" && GET_TARGET_INFO
+          source "${PATH1}/common.sh" && Diy_xinxi
+        fi
+    - name: 上传.config配置文件在 github actions
+      uses: actions/upload-artifact@v2
+      if: env.UPLOAD_CONFIG == 'true'
+      with:
+        name: .config_${{ env.CODE }}_${{ env.TARGET_PROFILE }}_${{ env.Compile_Date }}
+        path: config.txt
+        
     - name: 下载软件包
       id: package
       run: |
