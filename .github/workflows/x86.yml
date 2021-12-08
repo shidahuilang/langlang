@@ -15,7 +15,7 @@
 #
 #
 
-name: 触发 x86启动编译
+name: 触发 x86-SSH启动编译
 on:
   workflow_dispatch:
     inputs:
