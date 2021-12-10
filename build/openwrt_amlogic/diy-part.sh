@@ -34,31 +34,17 @@ amlogic_kernel=5.10.70_5.4.150
 rootfs_size=1200
 EOF
 
-# 修复NTFS格式优盘不自动挂载
-packages=" \
-brcmfmac-firmware-43430-sdio brcmfmac-firmware-43455-sdio kmod-brcmfmac wpad \
-kmod-fs-ext4 kmod-fs-vfat kmod-fs-exfat dosfstools e2fsprogs ntfs-3g \
-kmod-usb2 kmod-usb3 kmod-usb-storage kmod-usb-storage-extras kmod-usb-storage-uas \
-kmod-usb-net kmod-usb-net-asix-ax88179 kmod-usb-net-rtl8150 kmod-usb-net-rtl8152 \
-blkid lsblk parted fdisk cfdisk losetup resize2fs tune2fs pv unzip \
-lscpu htop iperf3 curl lm-sensors python3 luci-app-amlogic
-"
-sed -i '/FEATURES+=/ { s/cpiogz //; s/ext4 //; s/ramdisk //; s/squashfs //; }' \
-    target/linux/armvirt/Makefile
-for x in $packages; do
-    sed -i "/DEFAULT_PACKAGES/ s/$/ $x/" target/linux/armvirt/Makefile
-done
-
-# luci-app-cpufreq修改一些代码适配amlogic
-sed -i 's/LUCI_DEPENDS.*/LUCI_DEPENDS:=\@\(arm\|\|aarch64\)/g' package/lean/luci-app-cpufreq/Makefile
-
-# 为 armvirt 添加 autocore 支持
-sed -i 's/TARGET_rockchip/TARGET_rockchip\|\|TARGET_armvirt/g' package/lean/autocore/Makefile
+# 设置打包固件的机型，内核组合（可用内核是时时变化的,过老的内核就删除的，所以要选择什么内核请看说明）
+cat >$GITHUB_WORKSPACE/amlogic_openwrt <<-EOF
+amlogic_model=s905x3_s905x2_s905x_s905d_s922x_s912
+amlogic_kernel=5.10.70_5.4.150
+rootfs_size=960
+EOF
 
 
 # 修改插件名字
 sed -i 's/"aMule设置"/"电驴下载"/g' `grep "aMule设置" -rl ./`
-sed -i 's/"网络存储"/"存储"/g' `grep "网络存储" -rl ./`
+sed -i 's/"网络存储"/"NAS"/g' `grep "网络存储" -rl ./`
 sed -i 's/"Turbo ACC 网络加速"/"网络加速"/g' `grep "Turbo ACC 网络加速" -rl ./`
 sed -i 's/"实时流量监测"/"流量"/g' `grep "实时流量监测" -rl ./`
 sed -i 's/"KMS 服务器"/"KMS激活"/g' `grep "KMS 服务器" -rl ./`
@@ -68,3 +54,12 @@ sed -i 's/"Web 管理"/"Web"/g' `grep "Web 管理" -rl ./`
 sed -i 's/"管理权"/"改密码"/g' `grep "管理权" -rl ./`
 sed -i 's/"带宽监控"/"监控"/g' `grep "带宽监控" -rl ./`
 sed -i 's/"Argon 主题设置"/"Argon设置"/g' `grep "Argon 主题设置" -rl ./`
+
+
+# 整理固件包时候,删除您不想要的固件或者文件,让它不需要上传到Actions空间
+cat >${GITHUB_WORKSPACE}/Clear <<-EOF
+rm -rf config.buildinfo
+rm -rf feeds.buildinfo
+rm -rf sha256sums
+rm -rf version.buildinfo
+EOF
