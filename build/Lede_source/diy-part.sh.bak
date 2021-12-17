@@ -39,6 +39,8 @@ rm /etc/rc.local
 rm /etc/bench.log
 EOF
 
+#rm -rf ./package/lean/luci-app-dockerman        # 删除大雕docker
+#rm -rf ./package/lean/luci-lib-docker           # 删除大雕docker
 
 # K3专用，编译K3的时候只会出K3固件
 
