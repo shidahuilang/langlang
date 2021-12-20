@@ -149,7 +149,7 @@ jobs:
       if: env.USE_CACHEWRTBUILD == 'false'
       uses: klever1988/cachewrtbuild@main
       with:
-        ccache: 'true'
+        ccache: 'false'
         prefix: ${{ github.workspace }}/openwrt
 
     - name: 生成配置文件
