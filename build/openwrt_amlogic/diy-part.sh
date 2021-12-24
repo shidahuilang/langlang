@@ -16,7 +16,7 @@ uci commit dhcp                                                             # �
 uci set system.@system[0].hostname='Phicomm-N1'                             # 修改主机名称为Phicomm-N1
 EOF
 
-sed -i 's/luci-theme-bootstrap/luci-theme-argon/g' feeds/luci/collections/luci/Makefile           # 选择argon为默认主题
+sed -i 's/luci-theme-bootstrap/luci-theme-opentomcat/g' feeds/luci/collections/luci/Makefile           # 选择argon为默认主题
 
 sed -i "s/OpenWrt /大灰狼 Compiled in $(TZ=UTC-8 date "+%Y.%m.%d") @ OpenWrt /g" $ZZZ          # 增加个性名字${Author}默认为你的github账号
 
