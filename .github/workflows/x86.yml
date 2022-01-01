@@ -59,7 +59,7 @@ jobs:
       matrix:
         target: [Lede_source]
 
-        # [Lede_source,Lienol_source,Mortal_source,Tianling_source,openwrt_amlogic]
+        # [Lede_source,Lede_opewrtR3G,Lede_nanopi_r2s,Lede_nanopi_r4s,Lede_nanopi_r2c,Lienol_source,Mortal_source,Tianling_source,openwrt_amlogic]
 
     
     steps:
