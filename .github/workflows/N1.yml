@@ -1,4 +1,4 @@
-name: N1固件
+name: N1
 on:
   workflow_dispatch:
   push:
