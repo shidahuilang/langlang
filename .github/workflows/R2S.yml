@@ -5,7 +5,7 @@
 # Copyright (C) 2019 P3TERX <https://p3terx.com>
 # <https://github.com/P3TERX/Actions-OpenWrt.git>
 #
-name: 编译OpenWrtxR2S固件
+name: 编译OpenWrtR2s固件
 on:
   workflow_dispatch:
     inputs:
@@ -14,10 +14,9 @@ on:
         required: false
         default: 'ssh-actions'
 
-# 定时触发开始编译(把下面两个#去掉开启,时间设置请看定时编译说明)
-  #schedule:
-  # - cron: 0 16 */3 * *
-
+#定时触发开始编译(把下面两个#去掉开启,时间设置请看定时编译说明)
+ # schedule:
+    # - cron: 0 16 * * 6
 env:
   Github: https://github.com/${{github.repository}}
   Author: ${{github.actor}}
@@ -58,13 +57,14 @@ jobs:
         echo "UPLOAD_RELEASE=${UPLOAD_RELEASE}" >> $GITHUB_ENV
         echo "SERVERCHAN_SCKEY=${SERVERCHAN_SCKEY}" >> $GITHUB_ENV
         echo "REGULAR_UPDATE=${REGULAR_UPDATE}" >> $GITHUB_ENV
+        echo "USE_CACHEWRTBUILD=${USE_CACHEWRTBUILD}" >> $GITHUB_ENV
         echo "BY_INFORMATION=${BY_INFORMATION}" >> $GITHUB_ENV
         echo "CangKu=${Apidz##*/}" >> $GITHUB_ENV
         echo "Modelfile=${{matrix.target}}" >> $GITHUB_ENV
+        
     - name: 公 告
       run: |
         echo
-        git clone --depth 1 -b main https://github.com/shidahuilang/common build/common > /dev/null 2>&1
         chmod -R +x "${GITHUB_WORKSPACE}/build/common"
         if [[ "${REPO_BRANCH}" == "master" ]]; then
           echo "ZZZ=package/lean/default-settings/files/zzz-default-settings" >> $GITHUB_ENV
@@ -81,16 +81,20 @@ jobs:
         fi
         echo "NETIP=package/base-files/files/etc/networkip" >> $GITHUB_ENV
         echo "DELETE=package/base-files/files/etc/deletefile" >> $GITHUB_ENV
-        if [ -n "$(ls -A build/common/0809gg 2>/dev/null)" ]; then
+        if [ -n "$(ls -A build/common/0930gg 2>/dev/null)" ]; then
           source build/common/common.sh && Diy_gonggao
         else
           source build/common/common.sh && Diy_tongzhi
         fi
+                
     - name: 电报机器人信息通知
-      if: env.SERVERCHAN_SCKEY == 'true'
       run: |
-        curl -k --data chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" --data "text=🎉 主人：您正在使用【${{matrix.target}}】文件夹编译固件中(${{env.CangKu}}仓库的#${{env.Run_number}}号),请耐心等待...... 😋" "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage"
-    - name: 部署编译环境
+        if [[ "${SERVERCHAN_SCKEY}" == "true" ]]; then
+          curl -k --data chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" --data "text=🎉 主人：
+          我是朱莉【${{matrix.target}}】不要拿黑J8搞我了(${CangKu}求求你#${Run_number}号),再也不敢了...... 😋" "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage"
+        fi
+        
+    - name: 部署编译
       env:
         DEBIAN_FRONTEND: noninteractive
       run: |
@@ -113,7 +117,7 @@ jobs:
         echo "Home=${GITHUB_WORKSPACE}/openwrt" >> $GITHUB_ENV
         echo "PATH1=${GITHUB_WORKSPACE}/openwrt/build/${{matrix.target}}" >> $GITHUB_ENV
  
-    - name: 加载源,补丁和自定义设置
+    - name: 加载源设置
       run: |
         echo "Compile_Date=$(date +%Y%m%d%H%M)" >> $GITHUB_ENV
         cp -Rf `find ./ -maxdepth 1 -type d ! -path './openwrt' ! -path './'` openwrt
@@ -138,20 +142,21 @@ jobs:
           source "${PATH1}/upgrade.sh" && Diy_Part1
         fi
     
-    #- name: 缓存加速(7天内二次编译有效)
-     # uses: klever1988/cachewrtbuild@test
-     # with:
-     #   ccache: 'true'
-     #   prefix: ${{ github.workspace }}/openwrt
+    - name: 缓存加速
+      if: env.USE_CACHEWRTBUILD == 'true'
+      uses: klever1988/cachewrtbuild@test
+      with:
+        ccache: 'true'
+        prefix: ${{ github.workspace }}/openwrt
         
-    - name: SSH远程连接（配置固件）
-      uses: danshui-git/debugger-action@master
+    - name: SSH远程连接
+      uses: MCydia/debugger-action@master
       if: env.SSH_ACTIONS == 'true' || (github.event.inputs.ssh == 'ssh' && github.event.inputs.ssh  != 'false')
       env:
         TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
 
-    - name: 生成配置文件
+    - name: 生成配置
       run: |
         cd openwrt
         source "${PATH1}/common.sh" && Diy_chajian > /dev/null 2>&1
@@ -181,7 +186,8 @@ jobs:
           source "${PATH1}/upgrade.sh" && GET_TARGET_INFO
           source "${PATH1}/common.sh" && Diy_xinxi
         fi
-    - name: 上传.config配置文件在 github actions
+        
+    - name: 上传.config配置
       uses: actions/upload-artifact@v2
       if: env.UPLOAD_CONFIG == 'true'
       with:
@@ -195,6 +201,7 @@ jobs:
         make download -j8
         find dl -size -1024c -exec ls -l {} \;
         find dl -size -1024c -exec rm -f {} \;
+        
     - name: 开始编译固件
       id: compile
       run: |
@@ -204,14 +211,15 @@ jobs:
         echo "::set-output name=status::success"
         echo "date=$(date "+%Y%m%d%H%M%S")" >> $GITHUB_ENV
         echo "date1=$(date +'%m.%d')" >> $GITHUB_ENV
-    - name: 上传bin文件夹(固件+ipk)在 github actions
+        
+    - name: 上传bin文件夹(固件+ipk)
       uses: actions/upload-artifact@v2
       if: steps.compile.outputs.status == 'success' && env.UPLOAD_BIN_DIR == 'true'
       with:
         name: filename+ipk_${{ env.CODE }}_${{ env.TARGET_PROFILE }}_${{ env.Compile_Date }}
         path: openwrt/bin
     
-    - name: 整理固件文件夹
+    - name: 整理固件
       id: organizer
       run: |
         if [ "${Modelfile}" == "openwrt_amlogic" ]; then
@@ -230,6 +238,7 @@ jobs:
         echo "FIRMWARE=$PWD" >> $GITHUB_ENV
         echo "BOT=TRUE" >> $GITHUB_ENV
         echo "::set-output name=status::success"
+        
     - name: 上传固件在 github actions
       uses: actions/upload-artifact@v2
       if: steps.organizer.outputs.status == 'success' && env.UPLOAD_FIRMWARE == 'true'
@@ -300,8 +309,12 @@ jobs:
         tag: AutoUpdate
         overwrite: true
         file_glob: true
-
+   
     - name: 电报机器人信息通知
-      if: steps.organizer.outputs.status == 'success' && env.SERVERCHAN_SCKEY == 'true'
       run: |
-        curl -k --data chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" --data "text=我亲爱的✨主人✨：您使用【${{matrix.target}}】文件夹编译的[${{ env.CODE }}-${{ env.TARGET_PROFILE }}]固件(${{env.CangKu}}仓库的#${{env.Run_number}}号)顺利编译完成了！💐" "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage"
+        if [[ "${BOT}" == "TRUE" ]]; then
+          if [[ "${SERVERCHAN_SCKEY}" == "true" ]]; then
+            curl -k --data chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" --data "text=我亲爱的✨主人✨：
+            您使用【${{matrix.target}}】文件夹编译的[${{ env.NAME2 }}-${{ env.NAME1 }}]固件(${CangKu}仓库的#${Run_number}号)顺利编译完成了！💐" "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage"
+          fi
+        fi
