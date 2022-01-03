@@ -1,4 +1,4 @@
-name: R4s固件
+name: R4s
 on:
   workflow_dispatch:
   push:
