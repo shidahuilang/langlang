@@ -42,6 +42,7 @@ dns:
   upstream_dns_file: ""
   bootstrap_dns:
   - 222.85.85.85
+  - 222.88.88.88
   all_servers: true
   fastest_addr: false
   fastest_timeout: 1s
@@ -98,12 +99,20 @@ tls:
 filters:
 - enabled: false
   url: https://raw.githubusercontent.com/dallaslu/penzai-list/main/uBlacklist.txt
-  name: 鐧剧
+  name: 百科
   id: 1625890935
 - enabled: false
   url: https://raw.githubusercontent.com/BlueSkyXN/AdGuardHomeRules/master/all.txt
   name: "2"
   id: 1625890936
+- enabled: false
+  url: https://raw.githubusercontent.com/banbendalao/ADgk/master/ADgk.txt
+  name: "3"
+  id: 1625890937
+- enabled: true
+  url: https://cdn.jsdelivr.net/gh/privacy-protection-tools/anti-AD@master/anti-ad-easylist.txt
+  name: "6"
+  id: 1625890940
 - enabled: true
   url: https://raw.githubusercontent.com/shidahuilang/AdGuardHome/main/lang.txt
   name: "12"
@@ -121,7 +130,7 @@ user_rules:
 - '||youtube.com/get_video_info'
 - '||api.ad.xiaomi.com^$important'
 - '||t7z.cupid.ptqy.gitv.tv^$important'
-- '#鐧惧害鐭ラ亾鐩稿叧骞垮憡'
+- '#百度知道相关广告'
 - '||fzpf.whntsw.cn^$important'
 - '||baijiahao.baidu.com^$important'
 - '||wh.huitop.cn^$importan'
@@ -200,11 +209,11 @@ user_rules:
 - '||wifimodule.doubimeizhi.com^$important'
 - '||msy59wz.mqtt.iot.gz.baidubce.com^$important'
 - '||i.ytimg.com^$important^$important'
-- '#灞忚斀鑻规灉OTA鏇存柊'
+- '#屏蔽苹果OTA更新'
 - '||gdmf.apple.com^$important'
 - '||appldnld.apple.com^$important'
 - '||world-gen.g.aaplimg.com^$important'
-- '#鏀捐鐩稿叧渚濊禆'
+- '#放行相关依赖'
 - '@@||*.mipay.com^$important'
 - '@@||*.miwifi.com^$important'
 - '@@||*.twitter.com^$important'
