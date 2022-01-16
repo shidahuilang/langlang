@@ -15,7 +15,7 @@ sed -i "/uci commit network/i\uci set network.lan.delegate='0'" $ZZZ            
 # 关闭IPv6 分配长度
 sed -i '/ip6assign/d' package/base-files/files/bin/config_generate
 
-sed -i 's/luci-theme-bootstrap/luci-theme-opentomcat/g' feeds/luci/collections/luci/Makefile           
+sed -i 's/luci-theme-bootstrap/luci-theme-Neobird/g' feeds/luci/collections/luci/Makefile           
 sed -i "s/OpenWrt /大灰狼 $(TZ=UTC-8 date "+%Y.%m.%d") @ OpenWrt /g" $ZZZ         
 
 sed -i "/uci commit system/i\uci set system.@system[0].hostname='OpenWrt-DHL'" $ZZZ               
