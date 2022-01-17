@@ -24,7 +24,7 @@ uci set system.@system[0].hostname='OpenWrt'                            # 修改
 EOF
 
 #sed -i 's/luci-theme-bootstrap/luci-theme-opentomcat/g' feeds/luci/collections/luci/Makefile            # 选择argon为默认主题
-sed -i "/uci commit luci/i\uci set luci.main.mediaurlbase=/luci-static/Neobird" package/lean/default-settings/files/zzz-default-settings
+sed -i "/uci commit luci/i\uci set luci.main.mediaurlbase=/luci-static/neobird" package/lean/default-settings/files/zzz-default-settings
 sed -i "s/OpenWrt /大灰狼 $(TZ=UTC-8 date "+%Y.%m.%d") @ OpenWrt /g" $ZZZ                           # 增加个性名字 ${Author} 默认为你的github帐号
 
 sed -i '/CYXluq4wUazHjmCDBCqXF/d' $ZZZ                                                             # 设置密码为空
