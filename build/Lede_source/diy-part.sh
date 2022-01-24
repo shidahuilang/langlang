@@ -65,3 +65,19 @@ rm -rf openwrt-x86-64-generic-squashfs-rootfs.img.gz
 rm -rf sha256sums
 rm -rf version.buildinfo
 EOF
+
+cat >> $ZZZ <<EOF
+echo "Github=https://github.com/shidahuilang/langlang" >> /bin/openwrt_info
+echo "Luci_Edition=18.06" >> /bin/openwrt_info
+echo "CURRENT_Version=lede-x86-64-202201201607" >> /bin/openwrt_info
+echo "DEFAULT_Device=x86-64" >> /bin/openwrt_info
+echo "Firmware_Type=img.gz" >> /bin/openwrt_info
+echo "LUCI_Name=18.06" >> /bin/openwrt_info
+echo "REPO_Name=lede" >> /bin/openwrt_info
+echo "Github_Release=https://github.com/shidahuilang/langlang/releases/download/AutoUpdate" >> /bin/openwrt_info
+echo "Egrep_Firmware=18.06-lede-x86-64" >> /bin/openwrt_info
+echo "Version=V6.5" >> /bin/openwrt_info
+echo "Download_Path=/tmp/Downloads" >> /bin/openwrt_info
+echo "Download_Tags=/tmp/Downloads/Github_Tags" >> /bin/openwrt_info
+EOF
+sed -i '/exit 0/d' $ZZZ && echo "exit 0" >> $ZZZ
