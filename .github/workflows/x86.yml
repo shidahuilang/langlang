@@ -165,21 +165,34 @@ jobs:
         TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
 
-    - name: 生成配置
+    - name: 读取扩展文件
       run: |
-        cd openwrt
-        source "${PATH1}/common.sh" && Diy_chajian > /dev/null 2>&1
-        make defconfig > /dev/null 2>&1
-        echo "TARGET_BOARD=$(awk -F '[="]+' '/TARGET_BOARD/{print $2}' .config)" >> $GITHUB_ENV
-        echo "TARGET_SUBTARGET=$(awk -F '[="]+' '/TARGET_SUBTARGET/{print $2}' .config)" >> $GITHUB_ENV
-        if [ `grep -c "CONFIG_TARGET_x86_64=y" .config` -eq '1' ]; then
-          echo "x86-64" > DEVICE_NAME
-          [ -s DEVICE_NAME ] && echo "TARGET_PROFILE=$(cat DEVICE_NAME)" >> $GITHUB_ENV
-        elif [ `grep -c "CONFIG_TARGET.*DEVICE.*=y" .config` -eq '1' ]; then
-          grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME
-          [ -s DEVICE_NAME ] && echo "TARGET_PROFILE=$(cat DEVICE_NAME)" >> $GITHUB_ENV
-        else
-          echo "TARGET_PROFILE=armvirt" >> $GITHUB_ENV
+        echo
+        git clone --depth 1 -b main https://github.com/281677160/common build/common > /dev/null 2>&1
+        chmod -R +x "${GITHUB_WORKSPACE}/build/common"
+        echo "BILDYML=$(grep "compileop" -rl ${GITHUB_WORKSPACE}/.github |cut -d "/" -f9)" >> $GITHUB_ENV
+        echo "NETIP=package/base-files/files/etc/networkip" >> $GITHUB_ENV
+        echo "DELETE=package/base-files/files/etc/deletefile" >> $GITHUB_ENV
+        if [[ "${Modelfile}" == "openwrt_amlogic" ]]; then
+          echo "ZZZ=package/lean/default-settings/files/zzz-default-settings" >> $GITHUB_ENV
+          echo "CODE=amlogic" >> $GITHUB_ENV
+          echo "OpenWrt_name=18.06" >> $GITHUB_ENV
+        elif [[ "${REPO_BRANCH}" == "master" ]]; then
+          echo "ZZZ=package/lean/default-settings/files/zzz-default-settings" >> $GITHUB_ENV
+          echo "CODE=Lede" >> $GITHUB_ENV
+          echo "OpenWrt_name=18.06" >> $GITHUB_ENV
+        elif [[ "${REPO_BRANCH}" == "19.07" ]]; then
+          echo "ZZZ=package/default-settings/files/zzz-default-settings" >> $GITHUB_ENV
+          echo "CODE=Lienol" >> $GITHUB_ENV
+          echo "OpenWrt_name=19.07" >> $GITHUB_ENV
+        elif [[ "${REPO_BRANCH}" == "openwrt-18.06" ]]; then
+          echo "ZZZ=package/emortal/default-settings/files/99-default-settings" >> $GITHUB_ENV
+          echo "CODE=Tianling" >> $GITHUB_ENV
+          echo "OpenWrt_name=tl-18.06" >> $GITHUB_ENV
+        elif [[ "${REPO_BRANCH}" == "openwrt-21.02" ]]; then
+          echo "ZZZ=package/emortal/default-settings/files/99-default-settings" >> $GITHUB_ENV
+          echo "CODE=Mortal" >> $GITHUB_ENV
+          echo "OpenWrt_name=21.02" >> $GITHUB_ENV
         fi
         
     - name: 编译信息
