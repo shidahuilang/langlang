@@ -318,7 +318,7 @@ jobs:
         file_glob: true
         
     - name: 完成通知
-      if: steps.organizer.outputs.status == 'success' && env.TELEGRAM_BOT == 'TELE'
+      if: env.PUSH_PLUS_TOKEN && env.SERVERCHAN_SCKEY == 'PUSH' || env.TELEGRAM_BOT_TOKEN && env.SERVERCHAN_SCKEY == 'TELE'
       run: |
         curl "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}&text=您的${{ env.FIRMWARE_MESSAGE }}固件成功编译完成了！
 
