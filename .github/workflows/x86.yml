@@ -69,7 +69,7 @@ jobs:
         
     - name: 清理脚本
       uses: GitRML/delete-workflow-runs@main
-      continue-on-error: true
+      continue-on-error: false
       with:
         retain_days: 10
         keep_minimum_runs: 1
