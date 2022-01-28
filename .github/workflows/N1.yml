@@ -317,19 +317,11 @@ jobs:
         overwrite: true
         file_glob: true
         
-    - name: 完成通知
-      if: steps.organizer.outputs.status == 'success' && env.TELEGRAM_BOT == 'TELE'
+    - name: 电报通知
+      if: steps.compile.outputs.status == 'success' && env.PUSH_PLUS_TOKEN && env.SERVERCHAN_SCKEY == 'PUSH' || steps.compile.outputs.status == 'success' && env.TELEGRAM_BOT_TOKEN && env.SERVERCHAN_SCKEY == 'TELE'
       run: |
-        curl "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}&text=您的${{ env.FIRMWARE_MESSAGE }}固件成功编译完成了！
-
-          🎈 编译时间：${{ env.FILE_TIME1 }}
-
-          ⏰ 编译用时：${{ env.BUILD_TIME }}
-
-          🎉 发布地址：${{ env.GITHUB_RELEASE }}
-
-          💐 奶牛快传：${{ env.COWTRANSFER_URL }}
-
-          ⛄️ WeTransfer：${{ env.WETRANSFER_URL }}
-
-          🌴 固件已经编译完成 🎈！！！" >/dev/null 2>&1 && echo "ok..."
+        if [[ "${SERVERCHAN_SCKEY}" == "TELE" ]]; then
+          curl -k --data chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" --data "text=我亲爱的✨主人✨：您使用【${{matrix.target}}】文件夹编译的[${{ env.CODE }}-${{ env.TARGET_PROFILE }}]固件(${{env.CangKu}}仓库的#${{env.Run_number}}号)顺利编译完成了！💐" "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage"
+        elif [[ "${SERVERCHAN_SCKEY}" == "PUSH" ]]; then
+          curl -k --data token="${{ secrets.PUSH_PLUS_TOKEN }}" --data title="[${{ env.CODE }}-${{ env.TARGET_PROFILE }}]编译成功" --data "content=我亲爱的✨主人✨：您使用【${{matrix.target}}】文件夹编译的[${{ env.CODE }}-${{ env.TARGET_PROFILE }}]固件(${{env.CangKu}}仓库的#${{env.Run_number}}号)顺利编译完成了！💐" "http://www.pushplus.plus/send"
+        fi
