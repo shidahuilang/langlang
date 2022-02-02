@@ -17,7 +17,7 @@ cd openwrt && make menuconfig
 首先需要打开 Openwrt 主页,点击系统-TTYD 终端或命令窗,或者使用putty按需输入下方指令:
 
  bash /bin/AutoBuild_Tools.sh
-1. USB 空间扩展-------6. 环境修复
+1. USB 空间扩展------6. 环境修复
 2. Samba 设置------- 7. 系统信息监控
 3. 端口占用列表-------8. 在线设备列表
 4. 硬盘信息----------9. 创建虚拟内存 (swap)
