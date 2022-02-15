@@ -74,15 +74,6 @@ jobs:
         retain_days: 10
         keep_minimum_runs: 1
 
-    - name: 清理固件
-      uses: dev-drprasad/delete-older-releases@master
-      continue-on-error: false
-      if: env.UPLOAD_RELEASE == 'true' && !cancelled()
-      with:
-        keep_latest: 6
-        delete_tags: false
-      env:
-        GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }}
 
     - name: 整理脚本
       run: |
