@@ -27,12 +27,7 @@ sed -i '/CYXluq4wUazHjmCDBCqXF/d' $ZZZ                                          
 #sed -i 's/PATCHVER:=5.4/PATCHVER:=5.10/g' target/linux/armvirt/Makefile                          # 默认内核5.4，修改内核为5.10
 
 
-# 设置打包固件的机型，内核组合（请看说明）
-cat >$GITHUB_WORKSPACE/amlogic_openwrt <<-EOF
-amlogic_model=s905d
-amlogic_kernel=5.10.70_5.4.150
-rootfs_size=1200
-EOF
+
 
 # 设置打包固件的机型，内核组合（可用内核是时时变化的,过老的内核就删除的，所以要选择什么内核请看说明）
 #cat >$GITHUB_WORKSPACE/amlogic_openwrt <<-EOF
