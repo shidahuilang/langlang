@@ -78,8 +78,7 @@ find . -name 'UnblockNeteaseMusic-Go' -o -name 'UnblockNeteaseMusic' -o -name 'l
 rm -rf feeds/packages/libs/libcap
 git clone https://github.com/xiaorouji/openwrt-passwall package/luci-app-passwall
 rm -rf package/luci-app-passwall/{v2ray-core,v2ray-plugin,xray-core,xray-plugin}
-# git clone https://github.com/fw876/helloworld package/luci-app-ssr-plus
-git clone https://github.com/281677160/ssr package/luci-app-ssr-plus
+git clone https://github.com/fw876/helloworld package/luci-app-ssr-plus
 
 sed -i 's/DEFAULT_PACKAGES +=/DEFAULT_PACKAGES += luci-app-passwall/g' target/linux/x86/Makefile
 sed -i "/exit 0/i\chmod +x /etc/webweb.sh && source /etc/webweb.sh" $ZZZ
@@ -166,33 +165,6 @@ fi
 # s905x3_s905x2_s905x_s905d_s922x_s912 一键打包脚本
 ################################################################################################################
 Diy_amlogic() {
-cd $GITHUB_WORKSPACE
-mkdir -p $GITHUB_WORKSPACE/amlogic/openwrt-armvirt
-cp -Rf ${Home}/bin/targets/armvirt/*/*.tar.gz $GITHUB_WORKSPACE/amlogic/openwrt-armvirt/ && sync
-rm -rf ${Home}/bin
-mkdir -p ${Home}/bin/targets/armvirt/64
-rm -rf $GITHUB_WORKSPACE/amlogic-s9xxx && svn co https://github.com/ophub/amlogic-s9xxx-openwrt/trunk/amlogic-s9xxx $GITHUB_WORKSPACE/amlogic-s9xxx > /dev/null 2>&1
-rm -rf $GITHUB_WORKSPACE/amlogic-s9xxx/{.svn,README.cn.md,README.md} > /dev/null 2>&1
-mv $GITHUB_WORKSPACE/amlogic-s9xxx $GITHUB_WORKSPACE/amlogic
-curl -fsSL https://raw.githubusercontent.com/ophub/amlogic-s9xxx-openwrt/main/make > $GITHUB_WORKSPACE/amlogic/make
-curl -fsSL https://raw.githubusercontent.com/ophub/amlogic-s9xxx-openwrt/main/.github/workflows/build-openwrt-lede.yml > $GITHUB_WORKSPACE/amlogic/op_kernel
-Make_kernel="$(cat $GITHUB_WORKSPACE/amlogic/op_kernel |grep ./make |cut -d "k" -f3 |sed s/[[:space:]]//g)"
-[[ -f $GITHUB_WORKSPACE/amlogic_openwrt ]] && source $GITHUB_WORKSPACE/amlogic_openwrt
-[[ -z ${amlogic_model} ]] && amlogic_model="s905x3_s905x2_s905x_s905d_s922x_s912"
-[[ -z ${amlogic_kernel} ]] && amlogic_kernel="5.10.70_5.4.150"
-[[ -z ${rootfs_size} ]] && rootfs_size="960"
-if [[ ${amlogic_kernel} == "5.10.70_5.4.150" ]] && [[ -n ${Make_kernel} ]]; then
-	amlogic_kernel="${Make_kernel}"
-else
-	amlogic_kernel="${amlogic_kernel}"
-fi
-minsize="$(egrep -o "ROOT_MB=[0-9]+" $GITHUB_WORKSPACE/amlogic/make)"
-rootfssize="ROOT_MB=${rootfs_size}"
-sed -i "s/${minsize}/${rootfssize}/g" $GITHUB_WORKSPACE/amlogic/make
-cd $GITHUB_WORKSPACE/amlogic
-sudo chmod +x make
-sudo ./make -d -b "${amlogic_model}" -k "${amlogic_kernel}"
-mv -f $GITHUB_WORKSPACE/amlogic/out/* ${Home}/bin/targets/armvirt/64/
 cd $GITHUB_WORKSPACE
 }
 
@@ -454,43 +426,14 @@ if [[ "${BY_INFORMATION}" == "true" ]]; then
 	awk '$0=NR$0' Plug-in > Plug-2
 	awk '{print "	" $0}' Plug-2 > Plug-in
 	sed -i "s/^/TIME g \"/g" Plug-in
-	cat /proc/cpuinfo | grep name | cut -f2 -d: | uniq -c > CPU
+		cat /proc/cpuinfo | grep name | cut -f2 -d: | uniq -c > CPU
         cat /proc/cpuinfo | grep "cpu cores" | uniq >> CPU
         sed -i 's|[[:space:]]||g; s|^.||' CPU && sed -i 's|CPU||g; s|pucores:||' CPU
         CPUNAME="$(awk 'NR==1' CPU)" && CPUCORES="$(awk 'NR==2' CPU)"
         rm -rf CPU
-
-	if [[ `grep -c "KERNEL_PATCHVER:=" ${Home}/target/linux/${TARGET_BOARD}/Makefile` -eq '1' ]]; then
-		PATCHVE="$(egrep -o 'KERNEL_PATCHVER:=[0-9]+\.[0-9]+' ${Home}/target/linux/${TARGET_BOARD}/Makefile |cut -d "=" -f2)"
-	elif [[ `grep -c "KERNEL_PATCHVER=" ${Home}/target/linux/${TARGET_BOARD}/Makefile` -eq '1' ]]; then
-		PATCHVE="$(egrep -o 'KERNEL_PATCHVER=[0-9]+\.[0-9]+' ${Home}/target/linux/${TARGET_BOARD}/Makefile |cut -d "=" -f2)"
-	else
-		PATCHVER="unknown"
-	fi
-	if [[ -n ${PATCHVE} ]]; then
-		if [[ -f ${Home}/include/kernel-${PATCHVE} ]]; then
-			PATCHVER=$(egrep -o "${PATCHVE}.[0-9]+" ${Home}/include/kernel-${PATCHVE})
-		else
-			PATCHVER=$(egrep -o "${PATCHVE}.[0-9]+" ${Home}/include/kernel-version.mk)
-		fi
-	fi
-	if [[ "${Modelfile}" == "openwrt_amlogic" ]]; then
-		[[ -e $GITHUB_WORKSPACE/amlogic_openwrt ]] && source $GITHUB_WORKSPACE/amlogic_openwrt
-		[[ "${amlogic_kernel}" == "5.12.12_5.4.127" ]] && {
-			curl -fsSL https://raw.githubusercontent.com/ophub/amlogic-s9xxx-openwrt/main/.github/workflows/build-openwrt-lede.yml > open.yml
-			Make_ker="$(cat open.yml | grep ./make | cut -d "k" -f3 | sed s/[[:space:]]//g)"
-			TARGET_kernel="${Make_ker}"
-			TARGET_model="${amlogic_model}"
-		} || {
-			TARGET_kernel="${amlogic_kernel}"
-			TARGET_model="${amlogic_model}"
-		}
-	fi
 fi
 rm -rf ${Home}/files/{README,README.md}
 }
-
-
 
 ################################################################################################################
 # 公告
@@ -519,7 +462,6 @@ echo
 echo
 }
 
-
 ################################################################################################################
 # 编译信息
 ################################################################################################################
@@ -532,11 +474,9 @@ TIME b "编译源码: ${CODE}"
 TIME b "源码链接: ${REPO_URL}"
 TIME b "源码分支: ${REPO_BRANCH}"
 TIME b "源码作者: ${ZUOZHE}"
-TIME b "内核版本: ${PATCHVER}"
 TIME b "Luci版本: ${OpenWrt_name}"
 [[ "${Modelfile}" == "openwrt_amlogic" ]] && {
-	TIME b "编译机型: ${TARGET_model}"
-	TIME b "打包内核: ${TARGET_kernel}"
+	TIME b "编译机型: 晶晨系列"
 } || {
 	TIME b "编译机型: ${TARGET_PROFILE}"
 }
@@ -545,7 +485,7 @@ TIME b "仓库地址: ${Github}"
 TIME b "启动编号: #${Run_number}（${CangKu}仓库第${Run_number}次启动[${Run_workflow}]工作流程）"
 TIME b "编译时间: ${Compte}"
 [[ "${Modelfile}" == "openwrt_amlogic" ]] && {
-	TIME g "友情提示：您当前使用【${Modelfile}】文件夹编译【${TARGET_model}】固件"
+	TIME g "友情提示：您当前使用【${Modelfile}】文件夹编译【晶晨系列】固件"
 } || {
 	TIME g "友情提示：您当前使用【${Modelfile}】文件夹编译【${TARGET_PROFILE}】固件"
 }
@@ -567,9 +507,14 @@ else
 	TIME r "上传BIN文件夹(固件+IPK): 关闭"
 fi
 if [[ ${UPLOAD_COWTRANSFER} == "true" ]]; then
-	TIME y "上传固件至【奶牛快传】和【WETRANSFER】: 开启"
+	TIME y "上传固件至【奶牛快传】: 开启"
 else
-	TIME r "上传固件至【奶牛快传】和【WETRANSFER】: 关闭"
+	TIME r "上传固件至【奶牛快传】: 关闭"
+fi
+if [[ ${UPLOAD_WETRANSFER} == "true" ]]; then
+	TIME y "上传固件至【WETRANSFER】: 开启"
+else
+	TIME r "上传固件至【WETRANSFER】: 关闭"
 fi
 if [[ ${UPLOAD_RELEASE} == "true" ]]; then
 	TIME y "发布固件: 开启"
@@ -604,6 +549,7 @@ if [[ ${REGULAR_UPDATE} == "true" ]]; then
 	TIME b "固件版本: ${Openwrt_Version}"
 	TIME b "云端路径: ${Github_UP_RELEASE}"
 	TIME g "《编译成功后，会自动把固件发布到指定地址，然后才会生成云端路径》"
+	TIME g "《普通的那个发布固件跟云端的发布路径是两码事，如果你不需要普通发布的可以不用打开发布功能》"
 	echo
 else
 	echo
