@@ -33,8 +33,8 @@ find . -name 'UnblockNeteaseMusic-Go' -o -name 'UnblockNeteaseMusic' -o -name 'l
 
 sed -i '/to-ports 53/d' $ZZZ
 
-git clone https://github.com/xiaorouji/openwrt-passwall package/luci-app-passwall
-rm -rf package/luci-app-passwall/{v2ray-core,v2ray-plugin,xray-core,xray-plugin}
+#git clone https://github.com/xiaorouji/openwrt-passwall package/luci-app-passwall
+#rm -rf package/luci-app-passwall/{v2ray-core,v2ray-plugin,xray-core,xray-plugin}
 git clone https://github.com/fw876/helloworld package/luci-app-ssr-plus
 
 sed -i "/exit 0/i\chmod +x /etc/webweb.sh && source /etc/webweb.sh" $ZZZ
