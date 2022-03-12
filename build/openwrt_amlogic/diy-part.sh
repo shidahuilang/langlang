@@ -1,7 +1,7 @@
 #!/bin/bash
 # Copyright (c) 2019-2020 P3TERX <https://p3terx.com>
 # DIY扩展二合一了，在此处可以增加插件
-#
+
 
 cat >$NETIP <<-EOF
 uci set network.lan.ipaddr='192.168.2.1'                                    # IPv4 地址(openwrt后台地址)
