@@ -6,45 +6,32 @@
 Version=V6.5
 
 Shell_Helper() {
-echo
-echo
-
-echo -e "${Yellow}命令用途：
-
-bash /bin/AutoUpdate.sh				[保留配置更新]
-bash /bin/AutoUpdate.sh	-n			[不保留配置更新]
-bash /bin/AutoUpdate.sh	-g			[把固件更改成其他作者固件,前提是你编译了有附带定时更新插件的其他作者的固件]
-bash /bin/AutoUpdate.sh	-c			[更换Github地址]
-bash /bin/AutoUpdate.sh	-t			[执行测试模式(只运行,不安装,查看更新固件操作流程)]
-bash /bin/AutoUpdate.sh	-h			[列出帮助信息]
-${White}"
-
-echo -e "${Purple}	
-===============================================================================================
-${White}"
-echo
 [[ -f /etc/CLOUD_Name ]] && {
-	export CLOUD_Name="$(egrep -o "${LUCI_Name}-${CURRENT_Version}${BOOT_Type}-[a-zA-Z0-9]+${Firmware_SFX}" /etc/CLOUD_Name | awk 'END {print}')" > /dev/null 2>&1
+	export CLOUD_Name="$(cat /etc/CLOUD_Name)" > /dev/null 2>&1
 } || {
-	wget -q --no-cookie --no-check-certificate -T 15 -t 4 -P ${Download_Path} https://ghproxy.com/${Github_Tagstwo} -O ${Download_Path}/Github_Tags > /dev/null 2>&1
+	wget -q -P ${Download_Path} https://ghproxy.com/${Github_Tagstwo} -O ${Download_Path}/Github_Tags > /dev/null 2>&1
 	export CLOUD_Name="$(egrep -o "${LUCI_Name}-${CURRENT_Version}${BOOT_Type}-[a-zA-Z0-9]+${Firmware_SFX}" ${Download_Tags} | awk 'END {print}')" > /dev/null 2>&1
 }
+clear
+echo
+echo
+
 echo -e "${Green}详细参数：
 
-/overlay 可用:					${Overlay_Available}
-/tmp 可用:					${TMP_Available}M
-固件下载位置:					${Download_Path}
-当前设备名称:					${CURRENT_Device}
-固件上的名称:					${DEFAULT_Device}
-当前固件版本:					${CURRENT_Version}
-Github 地址:					${Github}
-解析 API 地址:					${Github_Tags}
-固件下载地址:					${Github_Release}
-更新运行日志:					${AutoUpdate_Log_Path}/AutoUpdate.log
-固件作者:					${Author}
-作者仓库:					${CangKu}
-固件名称:					${CLOUD_Name}
-固件格式:					${EFI_Mode}${Firmware_SFX}
+/overlay 可用:		${Overlay_Available}
+/tmp 可用:		${TMP_Available}M
+固件下载位置:		${Download_Path}
+当前设备名称:		${CURRENT_Device}
+固件上的名称:		${DEFAULT_Device}
+当前固件版本:		${CURRENT_Version}
+Github 地址:		${Github}
+解析 API 地址:		${Github_Tags}
+固件下载地址:		${Github_Release}
+更新运行日志:		${AutoUpdate_Log_Path}/AutoUpdate.log
+固件作者:		${Author}
+作者仓库:		${CangKu}
+固件名称:		${CLOUD_Name}
+固件格式:		${EFI_Mode}${Firmware_SFX}
 ${White}"
 exit 0
 }
@@ -61,7 +48,7 @@ Purple="\033[1;95m"
 	chmod +x /bin/openwrt_info
 	source /bin/openwrt_info 
 } || {
-	echo -e "\n${Red}未检测到更新插件所需文件,无法运行更新程序!${White}"
+	echo -e "\n${Red}未检测到openwrt_info文件,无法运行更新程序!${White}"
 	echo
 	exit 1
 }
@@ -77,7 +64,8 @@ export Overlay_Available="$(df -h | grep ":/overlay" | awk '{print $4}' | awk 'N
 rm -rf "${Download_Path}" && export TMP_Available="$(df -m | grep "/tmp" | awk '{print $4}' | awk 'NR==1' | awk -F. '{print $1}')"
 [ ! -d "${Download_Path}" ] && mkdir -p ${Download_Path}
 opkg list | awk '{print $1}' > ${Download_Path}/Installed_PKG_List
-AutoUpdate_Log_Path=/tmp
+export PKG_List="${Download_Path}/Installed_PKG_List"
+export AutoUpdate_Log_Path="/tmp"
 GET_PID() {
 	local Result
 	while [[ $1 ]];do
@@ -146,18 +134,18 @@ echo
 if [[ -z "${Input_Option}" ]];then
 	export Upgrade_Options="sysupgrade -q"
 	export Update_Mode=1
-	TIME h "执行: 保留配置更新固件[静默模式]"
+	TIME h "执行: 更新固件[保留配置]"
 else
 	case ${Input_Option} in
 	-t | -n | -f | -u | -N | -s | -w)
 		case ${Input_Option} in
 		-t)
-			Input_Other="-t"
+			export Input_Other="-t"
 			TIME h "执行: 测试模式"
 			TIME z "测试模式(只运行,不安装,查看更新固件操作流程是否正确)"
 		;;
 		-w)
-			Input_Other="-w"
+			export Input_Other="-w"
 		;;
 		-n | -N)
 			export Upgrade_Options="sysupgrade -n"
@@ -177,10 +165,10 @@ else
 			source /bin/openwrt_info
 			TIME h "执行：更换[Github地址]操作"
 			TIME y "地址格式：https://github.com/帐号/仓库"
-			TIME z  "正确地址示例：https://github.com/shidahuilang/langlang"
+			TIME z  "正确地址示例：https://github.com/281677160/build-actions"
 			TIME h  "现在所用地址为：${Github}"
 			echo
-			read -p "请输入新的Github地址：" Input_Other
+			read -p "请输入新的Github地址(直接回车为不修改,退出程序)：" Input_Other
 			Input_Other="${Input_Other:-"$Github"}"
 			Github_uci=$(uci get autoupdate.@login[0].github 2>/dev/null)
 			[[ -n "${Github_uci}" ]] && [[ "${Github_uci}" != "${Input_Other}" ]] && {
@@ -203,6 +191,7 @@ else
 			}
 	;;
 	-h | -H | -l | -L)
+		TIME y "加载信息中，请稍后..."
 		Shell_Helper
 	;;
 	-g | -G)
@@ -220,14 +209,14 @@ fi
 [[ -z ${Github} ]] && TIME r "Github地址获取失败,请检查/bin/openwrt_info文件的值!" && exit 1
 TIME g "正在获取云端固件版本信息..."
 [ ! -d ${Download_Path} ] && mkdir -p ${Download_Path}
-wget -q --no-cookie --no-check-certificate ${Github_Tags} -O ${Download_Tags} > /dev/null 2>&1
+wget -q ${Github_Tags} -O ${Download_Tags} > /dev/null 2>&1
 if [[ $? -ne 0 ]];then
-	wget -q --no-cookie --no-check-certificate -P ${Download_Path} https://ghproxy.com/${Github_Tagstwo} -O ${Download_Path}/Github_Tags > /dev/null 2>&1
+	wget -q -P ${Download_Path} https://pd.zwc365.com/${Github_Tagstwo} -O ${Download_Path}/Github_Tags > /dev/null 2>&1
 	if [[ $? -ne 0 ]];then
-		wget -q --no-cookie --no-check-certificate -T 15 -t 4 -P ${Download_Path} https://pd.zwc365.com/${Github_Tagstwo} -O ${Download_Path}/Github_Tags > /dev/null 2>&1
+		wget -q -P ${Download_Path} https://ghproxy.com/${Github_Tagstwo} -O ${Download_Path}/Github_Tags > /dev/null 2>&1
 	fi
 	if [[ $? -ne 0 ]];then
-		TIME r "获取固件版本信息失败,请检测网络,或者您更改的Github地址为无效地址,或者您的仓库是私库!"
+		TIME r "获取固件版本信息失败,请检测网络,或者您更改的Github地址为无效地址,或者您的仓库是私库,或者发布已被删除!"
 		echo
 		exit 1
 	fi
@@ -253,17 +242,8 @@ export CLOUD_Name="$(egrep -o "${LUCI_Name}-${CURRENT_Version}${BOOT_Type}-[a-zA
 let X=$(grep -n "${Firmware}" ${Download_Tags} | tail -1 | cut -d : -f 1)-4
 let CLOUD_Firmware_Size=$(sed -n "${X}p" ${Download_Tags} | egrep -o "[0-9]+" | awk '{print ($1)/1048576}' | awk -F. '{print $1}')+1
 echo -e "\n本地版本：${CURRENT_Ver}"
-echo "云端版本：${CLOUD_Version}"	
-[[ "${TMP_Available}" -lt "${CLOUD_Firmware_Size}" ]] && {
-	TIME g "tmp 剩余空间: ${TMP_Available}M"
-	TIME r "tmp空间不足[${CLOUD_Firmware_Size}M],不够下载固件所需,请清理tmp空间或者增加运行内存!"
-	echo
-	exit 1
-}
+echo "云端版本：${CLOUD_Version}"
 if [[ ! "${Force_Update}" == 1 ]];then
-  	if [[ "${CURRENT_Version}" -gt "${CLOUD_Version}" ]];then
-		TIME r "检测到有可更新的固件版本,立即更新固件!"
-	fi
   	if [[ "${CURRENT_Version}" -eq "${CLOUD_Version}" ]];then
 		[[ "${AutoUpdate_Mode}" == 1 ]] && exit 0
 		TIME && read -p "当前版本和云端最新版本一致，是否还要重新安装固件?[Y/n]:" Choose
@@ -274,8 +254,7 @@ if [[ ! "${Force_Update}" == 1 ]];then
 			sleep 2
 			exit 0
 		}
-	fi
-  	if [[ "${CURRENT_Version}" -lt "${CLOUD_Version}" ]];then
+  	elif [[ "${CURRENT_Version}" -lt "${CLOUD_Version}" ]];then
 		[[ "${AutoUpdate_Mode}" == 1 ]] && exit 0
 		TIME && read -p "云端最高版本,低于您现在的版本,是否强制覆盖现有固件?[Y/n]:" Choose
 		[[ "${Choose}" == Y ]] || [[ "${Choose}" == y ]] && {
@@ -285,8 +264,16 @@ if [[ ! "${Force_Update}" == 1 ]];then
 			sleep 2
 			exit 0
 		}
+        else
+               TIME r "检测到有可更新的固件版本,立即更新固件!"
 	fi
 fi
+[[ "${TMP_Available}" -lt "${CLOUD_Firmware_Size}" ]] && {
+	TIME g "tmp 剩余空间: ${TMP_Available}M"
+	TIME r "tmp空间不足[${CLOUD_Firmware_Size}M],不够下载固件所需,请清理tmp空间或者增加运行内存!"
+	echo
+	exit 1
+}
 TIME g "列出详细信息..."
 sleep 1
 echo -e "\n固件作者：${Author}"
@@ -298,22 +285,41 @@ echo "固件格式：${Firmware_SFX}"
 echo "固件名称：${Firmware}"
 echo "下载保存：${Download_Path}"
 echo "固件体积：${CLOUD_Firmware_Size}M"
-sleep 1
 cd ${Download_Path}
-TIME g "正在下载云端固件,请耐心等待..."
-wget -q --no-cookie --no-check-certificate -T 15 -t 4 "https://ghproxy.com/${Github_Release}/${Firmware}" -O ${Firmware}
-if [[ $? -ne 0 ]];then
-	wget -q --no-cookie --no-check-certificate -T 15 -t 4 "https://pd.zwc365.com/${Github_Release}/${Firmware}" -O ${Firmware}
-	if [[ $? -ne 0 ]];then
-		TIME r "下载云端固件失败,请尝试手动安装!"
-		echo
-		exit 1
+[[ "$(cat ${Download_Path}/Installed_PKG_List)" =~ curl ]] && {
+	export Google_Check=$(curl -I -s --connect-timeout 8 google.com -w %{http_code} | tail -n1)
+	if [ ! "$Google_Check" == 301 ];then
+		TIME g "正在下载云端固件,请耐心等待..."
+		wget -q --show-progress --progress=bar:force:noscroll "https://ghproxy.com/${Github_Release}/${Firmware}" -O ${Firmware}
+		if [[ $? -ne 0 ]];then
+			wget -q --show-progress --progress=bar:force:noscroll "https://pd.zwc365.com/${Github_Release}/${Firmware}" -O ${Firmware}
+			if [[ $? -ne 0 ]];then
+				TIME r "下载云端固件失败,请尝试手动安装!"
+				echo
+				exit 1
+			else
+				TIME y "下载云端固件成功!"
+			fi
+		else
+			TIME y "下载云端固件成功!"
+		fi
 	else
-		TIME y "下载云端固件成功!"
+		TIME g "正在下载云端固件,请耐心等待..."
+		wget -q --show-progress --progress=bar:force:noscroll "${Github_Release}/${Firmware}" -O ${Firmware}
+		if [[ $? -ne 0 ]];then
+			wget -q --show-progress --progress=bar:force:noscroll "https://ghproxy.com/${Github_Release}/${Firmware}" -O ${Firmware}
+			if [[ $? -ne 0 ]];then
+				TIME r "下载云端固件失败,请尝试手动安装!"
+				echo
+				exit 1
+			else
+				TIME y "下载云端固件成功!"
+			fi
+		else
+			TIME y "下载云端固件成功!"
+		fi
 	fi
-else
-	TIME y "下载云端固件成功!"
-fi
+}
 export CLOUD_MD5=$(md5sum ${Firmware} | cut -c1-3)
 export CLOUD_256=$(sha256sum ${Firmware} | cut -c1-3)
 export MD5_256=$(echo ${Firmware} | egrep -o "[a-zA-Z0-9]+${Firmware_SFX}" | sed -r "s/(.*)${Firmware_SFX}/\1/")
@@ -327,18 +333,18 @@ export CURRENT_256="$(echo "${MD5_256}" | cut -c 4-)"
 	TIME r "SHA256对比失败,固件可能在下载时损坏,请检查网络后重试!"
 	exit 1
 }
-chmod 777 ${Firmware}
-TIME g "准备更新固件,更新期间请不要断开电源或重启设备 ..."
 [[ "${Input_Other}" == "-t" ]] && {
 	TIME z "测试模式运行完毕!"
 	rm -rf "${Download_Path}"
 	echo
 	exit 0
 }
+chmod 777 ${Firmware}
+[[ "$(cat ${PKG_List})" =~ gzip ]] && opkg remove gzip > /dev/null 2>&1
+TIME g "正在更新固件,更新期间请不要断开电源或重启设备 ..."
 sleep 2
-TIME g "正在更新固件,请耐心等待 ..."
-[[ `grep -c "gzip" ${Download_Path}/Installed_PKG_List` -ge '1' ]] && opkg remove gzip > /dev/null 2>&1
 if [[ "${AutoUpdate_Mode}" == 1 ]] || [[ "${Update_Mode}" == 1 ]]; then
+	source /etc/deletefile
 	cp -Rf /etc/config/network /mnt/network
 	mv -f /etc/config/luci /etc/config/luci-
 	sysupgrade -b /mnt/back.tar.gz
