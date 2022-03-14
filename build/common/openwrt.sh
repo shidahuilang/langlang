@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 
 #====================================================
-#	Author:	281677160
-#	Dscription: openwrt onekey Management
-#	github: https://github.com/281677160/build-actions
+#!/bin/bash
+# https://github.com/shidahuilang/langlang
+# common Module by 大灰狼
+# matrix.target=${Modelfile}
 #====================================================
 
 # 字体颜色配置
