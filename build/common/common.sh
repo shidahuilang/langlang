@@ -32,9 +32,9 @@ find . -name 'luci-app-ipsec-vpnd' -o -name 'luci-app-wol' | xargs -i rm -rf {}
 find . -name 'luci-app-wrtbwmon' -o -name 'wrtbwmon' | xargs -i rm -rf {}
 find . -name 'UnblockNeteaseMusic-Go' -o -name 'UnblockNeteaseMusic' -o -name 'luci-app-unblockmusic' | xargs -i rm -rf {}
 
-## git clone https://github.com/shidahuilang/openwrt-passwall package/luci-app-passwall
-git clone https://github.com/xiaorouji/openwrt-passwall package/openwrt-passwall
-git clone https://github.com/xiaorouji/openwrt-passwall2 package/luci-app-passwall2
+git clone https://github.com/shidahuilang/openwrt-passwall package/luci-app-passwall
+#git clone https://github.com/xiaorouji/openwrt-passwall package/openwrt-passwall
+#git clone https://github.com/xiaorouji/openwrt-passwall2 package/luci-app-passwall2
 ## rm -rf package/luci-app-passwall/{v2ray-core,v2ray-plugin,v2ray-geodata,xray-core,xray-plugin}
 git clone https://github.com/fw876/helloworld package/luci-app-ssr-plus
 rm -rf package/luci-app-ssr-plus/{dns2socks,microsocks,ipt2socks,pdnsd-alt}
