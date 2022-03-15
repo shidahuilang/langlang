@@ -123,7 +123,7 @@ fi
 [[ -f "${PATH1}/openwrt.sh" ]] && cp -Rf "${PATH1}"/openwrt.sh package/base-files/files/sbin/openwrt
 [[ -f "${PATH1}/tools.sh" ]] && cp -Rf "${PATH1}"/tools.sh package/base-files/files/sbin/tools
 chmod 775 package/base-files/files/sbin/openwrt
-chmod 775 package/base-files/files/sbin/tools.sh
+chmod 775 package/base-files/files/sbin/tools
 
 if [[ "${REPO_BRANCH}" == "master" ]]; then
 	cp -Rf "${Home}"/build/common/LEDE/files "${Home}"
