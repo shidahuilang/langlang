@@ -7,6 +7,6 @@
              
       OpenWrt AutoBuild by DaHuiLang
  -----------------------------------------------------
-      update   openwrt
-               tools
+      update----->openwrt
+      hold-all--->tools
  -----------------------------------------------------
