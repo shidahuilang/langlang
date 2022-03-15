@@ -39,7 +39,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [Mortal_source]
+        target: [Tianling_source]
 
         # [Lede_source,Lienol_source,Mortal_source]
 
