@@ -79,6 +79,19 @@ function ip_install() {
   ;;
   esac
   done
+  
+  echo
+  echo
+  read -p " 是否清空密码?直接回车跳过，按[Y/y]回车确认清空密码：" YN
+  case ${YN} in
+    [Yy]) 
+      passwd -d root
+      judge "清空密码"
+    ;;
+    *)
+      ECHOR "您已跳过清空密码"
+    ;;
+  esac
 }
 
 function dns_install() {
@@ -181,9 +194,10 @@ menu() {
   ECHOYY " 4. 转换成其他源码作者固件(不保留配置)"
   ECHOY " 5. 查看状态信息"
   ECHOYY " 6. 更换检测固件的gihub地址"
-  ECHOY " 7. 修改IP/DSN/网关"
-  ECHOYY " 8. 恢复出厂设置"
-  ECHOY " 9. 退出菜单"
+  ECHOY " 7. 修改IP/DSN/网关(会进行重启操作)"
+  ECHOYY " 8. 清空密码(会进行重启操作)"
+  ECHOY " 9. 恢复出厂设置(会进行重启操作)"
+  ECHOYY " 10. 退出菜单"
   echo
   XUANZHEOP="请输入数字"
   while :; do
@@ -202,7 +216,7 @@ menu() {
     break
     ;;
     4)
-      bash /bin/replace2.sh
+      bash /bin/replace.sh
     break
     ;;
     5)
@@ -218,10 +232,18 @@ menu() {
     break
     ;;
     8)
-      first_boot
+      passwd -d root
+      echo
+      ECHOG "密码已清空，正在为您重启openwrt中，请稍后从新登录..."
+      echo
+      reboot
     break
     ;;
     9)
+      first_boot
+    break
+    ;;
+    10)
       ECHOR "您选择了退出程序"
       exit 0
     break
@@ -237,9 +259,10 @@ menuws() {
   clear
   echo  
   ECHOB "  请选择执行命令编码"
-  ECHOY " 1. 修改IP/DSN/网关"
-  ECHOYY " 2. 恢复出厂设置"
-  ECHOY " 3. 退出菜单"
+  ECHOY " 1. 修改IP/DSN/网关(会进行重启操作)"
+  ECHOYY " 2. 清空密码(会进行重启操作)"
+  ECHOYY " 3. 恢复出厂设置(会进行重启操作)"
+  ECHOY " 4. 退出菜单"
   echo
   XUANZHEOP="请输入数字"
   while :; do
@@ -250,10 +273,18 @@ menuws() {
     break
     ;;
     2)
-      first_boot
+      passwd -d root
+      echo
+      ECHOG "密码已清空，正在为您重启openwrt中，请稍后从新登录..."
+      echo
+      reboot
     break
     ;;
     3)
+      first_boot
+    break
+    ;;
+    4)
       ECHOR "您选择了退出程序"
       exit 0
     break
