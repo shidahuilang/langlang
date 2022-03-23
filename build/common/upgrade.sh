@@ -7,7 +7,7 @@ GET_TARGET_INFO() {
 	[[ ${TARGET_PROFILE} == x86-64 ]] && {
 		[[ `grep -c "CONFIG_TARGET_IMAGES_GZIP=y" ${Home}/.config` -ge '1' ]] && Firmware_sfxo=img.gz || Firmware_sfxo=img 
 	}
-	[[ ${TARGET_PROFILE} == friendlyarm_nanopi-r2s ]] && {
+	[[ ${TARGET_PROFILE} == rockchip_armv8_DEVICE_friendlyarm_nanopi-r2s ]] && {
 		[[ `grep -c "CONFIG_TARGET_IMAGES_GZIP=y" ${Home}/.config` -ge '1' ]] && Firmware_sfxo=img.gz || Firmware_sfxo=img 
 	}
 	case "${REPO_BRANCH}" in
@@ -23,7 +23,7 @@ GET_TARGET_INFO() {
 			export Legacy_Firmware="openwrt-rockchip-armv8-friendlyarm_nanopi-r4s-ext4-sysupgrade.${Firmware_sfxo}"
 			export UEFI_Firmware="openwrt-rockchip-armv8-friendlyarm_nanopi-r4s-squashfs-sysupgrade.${Firmware_sfxo}"
 			export Firmware_sfx="${Firmware_sfxo}"
-		elif [[ "${TARGET_PROFILE}" == "friendlyarm_nanopi-r2s" ]]; then
+		elif [[ "${TARGET_PROFILE}" == "rockchip_armv8_DEVICE_friendlyarm_nanopi-r2s" ]]; then
 			export Legacy_Firmware="openwrt-rockchip-armv8-friendlyarm_nanopi-r2s-ext4-sysupgrade.${Firmware_sfxo}"
 			export UEFI_Firmware="openwrt-rockchip-armv8-friendlyarm_nanopi-r2s-squashfs-sysupgrade.${Firmware_sfxo}"
 			export Firmware_sfx="${Firmware_sfxo}"	
