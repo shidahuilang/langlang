@@ -19,11 +19,11 @@ GET_TARGET_INFO() {
 			export Legacy_Firmware="openwrt-x86-64-generic-squashfs-combined.${Firmware_sfxo}"
 			export UEFI_Firmware="openwrt-x86-64-generic-squashfs-combined-efi.${Firmware_sfxo}"
 			export Firmware_sfx="${Firmware_sfxo}"
-		elif[[ "${TARGET_PROFILE}" == "friendlyarm_nanopi-r4s" ]]; then
+		elif [[ "${TARGET_PROFILE}" == "friendlyarm_nanopi-r4s" ]]; then
 			export Legacy_Firmware="openwrt-rockchip-armv8-friendlyarm_nanopi-r4s-ext4-sysupgrade.${Firmware_sfxo}"
 			export UEFI_Firmware="openwrt-rockchip-armv8-friendlyarm_nanopi-r4s-squashfs-sysupgrade.${Firmware_sfxo}"
 			export Firmware_sfx="${Firmware_sfxo}"
-		elif[[ "${TARGET_PROFILE}" == "friendlyarm_nanopi-r2s" ]]; then
+		elif [[ "${TARGET_PROFILE}" == "friendlyarm_nanopi-r2s" ]]; then
 			export Legacy_Firmware="openwrt-rockchip-armv8-friendlyarm_nanopi-r2s-ext4-sysupgrade.${Firmware_sfxo}"
 			export UEFI_Firmware="openwrt-rockchip-armv8-friendlyarm_nanopi-r2s-squashfs-sysupgrade.${Firmware_sfxo}"
 			export Firmware_sfx="${Firmware_sfxo}"	
