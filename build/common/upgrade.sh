@@ -6,7 +6,6 @@
 GET_TARGET_INFO() {
 	[[ ${TARGET_PROFILE} == x86-64 ]] && {
 		[[ `grep -c "CONFIG_TARGET_IMAGES_GZIP=y" ${Home}/.config` -ge '1' ]] && Firmware_sfxo=img.gz || Firmware_sfxo=img 
-	}
 	[[ ${TARGET_PROFILE} == nanopi-r2s ]] && {
 		[[ `grep -c "CONFIG_TARGET_IMAGES_GZIP=y" ${Home}/.config` -ge '1' ]] && Firmware_sfxo=img.gz || Firmware_sfxo=img 
 	}
@@ -20,8 +19,8 @@ GET_TARGET_INFO() {
 			export UEFI_Firmware="openwrt-x86-64-generic-squashfs-combined-efi.${Firmware_sfxo}"
 			export Firmware_sfx="${Firmware_sfxo}"
 		elif [[ "${TARGET_PROFILE}" =~ (nanopi-r2s|friendlyarm_nanopi-r2s) ]]; then
-			export TARGET_PROFILE="nanopi-r2s"
-			export Up_Firmware="openwrt-${TARGET_BOARD}-${TARGET_SUBTARGET}-${TARGET_PROFILE}-squashfs-sysupgrade.${Firmware_sfxo}"
+			export TARGET_PROFILE="friendlyarm_nanopi-r2s"
+			export Ext4_Firmware="openwrt-rockchip-armv8-friendlyarm_nanopi-r2s-ext4-sysupgrade.${Firmware_sfxo}"
 			export Firmware_sfx="${Firmware_sfxo}"	
 		elif [[ "${TARGET_PROFILE}" =~ (phicomm_k3|phicomm-k3) ]]; then
 			export TARGET_PROFILE="phicomm_k3"
