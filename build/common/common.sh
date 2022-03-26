@@ -69,21 +69,17 @@ fi
 # LIENOL源码通用diy.sh文件
 ################################################################################################################
 Diy_lienol() {
-find . -name 'luci-app-netdata' -o -name 'netdata' -o -name 'luci-app-ttyd' | xargs -i rm -rf {}
+find . -name 'luci-app-netdata' -o -name 'netdata' -o -name 'luci-theme-argon' | xargs -i rm -rf {}
 find . -name 'ddns-scripts_aliyun' -o -name 'ddns-scripts_dnspod' -o -name 'luci-app-wol' | xargs -i rm -rf {}
+find . -name 'luci-app-wrtbwmon' -o -name 'wrtbwmon' -o -name 'pdnsd-alt' | xargs -i rm -rf {}
 find . -name 'UnblockNeteaseMusic-Go' -o -name 'UnblockNeteaseMusic' -o -name 'luci-app-unblockmusic' | xargs -i rm -rf {}
+rm -rf feeds/packages/libs/libcap
+git clone https://github.com/xiaorouji/openwrt-passwall package/luci-app-passwall
+rm -rf package/luci-app-passwall/{v2ray-core,v2ray-plugin,xray-core,xray-plugin}
+# git clone https://github.com/fw876/helloworld package/luci-app-ssr-plus
+git clone https://github.com/281677160/ssr package/luci-app-ssr-plus
 
-DISTRIB="$(egrep -o "DISTRIB_DESCRIPTION='.* '" $ZZZ |sed -r "s/DISTRIB_DESCRIPTION='(.*) '/\1/")"
-[[ -n "${DISTRIB}" ]] && sed -i "s/${DISTRIB}/OpenWrt/g" $ZZZ
-
-git clone https://github.com/shidahuilang/openwrt-passwall package/luci-app-passwall
-# git clone https://github.com/xiaorouji/openwrt-passwall package/openwrt-passwall
-# git clone https://github.com/xiaorouji/openwrt-passwall2 package/luci-app-passwall2
-## rm -rf package/luci-app-passwall/{v2ray-core,v2ray-plugin,v2ray-geodata,xray-core,xray-plugin}
-git clone https://github.com/fw876/helloworld package/luci-app-ssr-plus
-rm -rf package/luci-app-ssr-plus/{dns2socks,microsocks,ipt2socks,pdnsd-alt}
-
-sed -i 's/DEFAULT_PACKAGES +=/DEFAULT_PACKAGES += luci-app-passwall2/g' target/linux/x86/Makefile
+sed -i 's/DEFAULT_PACKAGES +=/DEFAULT_PACKAGES += luci-app-passwall/g' target/linux/x86/Makefile
 sed -i "/exit 0/i\chmod +x /etc/webweb.sh && source /etc/webweb.sh" $ZZZ
 }
 
@@ -112,24 +108,18 @@ find . -name 'luci-app-wol' | xargs -i rm -rf {}
 # 全部作者源码公共diy.sh文件
 ################################################################################################################
 Diy_all() {
-git clone --depth 1 -b "${REPO_BRANCH}" https://github.com/shidahuilang/package "${Home}"/openwrt-package
+git clone --depth 1 -b "${REPO_BRANCH}" https://github.com/shidahuilang/openwrt-package "${Home}"/openwrt-package
 cp -Rf "${Home}"/openwrt-package/* "${Home}" && rm -rf "${Home}"/openwrt-package
 
 if [[ ${REGULAR_UPDATE} == "true" ]]; then
 	git clone https://github.com/shidahuilang/luci-app-autoupdate feeds/luci/applications/luci-app-autoupdate
-	[[ -f "${PATH1}/AutoUpdate.sh" ]] && cp -Rf "${PATH1}"/AutoUpdate.sh package/base-files/files/bin/AutoUpdate.sh
-	[[ -f "${PATH1}/replace.sh" ]] && cp -Rf "${PATH1}"/replace.sh package/base-files/files/bin/replace.sh
+	cp -Rf "${PATH1}"/{AutoUpdate.sh,replace.sh} package/base-files/files/bin
 fi
-[[ -f "${PATH1}/openwrt.sh" ]] && cp -Rf "${PATH1}"/openwrt.sh package/base-files/files/sbin/openwrt
-[[ -f "${PATH1}/tools.sh" ]] && cp -Rf "${PATH1}"/tools.sh package/base-files/files/sbin/tools
-chmod 775 package/base-files/files/sbin/openwrt
-chmod 775 package/base-files/files/sbin/tools
-
 if [[ "${REPO_BRANCH}" == "master" ]]; then
 	cp -Rf "${Home}"/build/common/LEDE/files "${Home}"
 	cp -Rf "${Home}"/build/common/LEDE/diy/* "${Home}"
 	cp -Rf "${Home}"/build/common/LEDE/patches/* "${PATH1}/patches"
-elif [[ "${REPO_BRANCH}" == "main" ]]; then
+elif [[ "${REPO_BRANCH}" == "19.07" ]]; then
 	cp -Rf "${Home}"/build/common/LIENOL/files "${Home}"
 	cp -Rf "${Home}"/build/common/LIENOL/diy/* "${Home}"
 	cp -Rf "${Home}"/build/common/LIENOL/patches/* "${PATH1}/patches"
@@ -335,20 +325,8 @@ fi
 if [[ `grep -c "CONFIG_PACKAGE_luci-theme-argon=y" ${Home}/.config` -eq '1' ]]; then
 	if [[ `grep -c "CONFIG_PACKAGE_luci-app-argon-config=y" ${Home}/.config` == '0' ]]; then
 		sed -i '/luci-app-argon-config/d' ${Home}/.config
-		echo -e "\nCONFIG_PACKAGE_luci-app-argon-config=y" >> ${Home}/.config
+		echo -e "\nCONFIG_PACKAGE_luci-theme-argon=y" >> ${Home}/.config
 	fi
-else
-	sed -i '/luci-app-argon-config/d' ${Home}/.config
-	echo -e "\n# CONFIG_PACKAGE_luci-app-argon-config is not set" >> ${Home}/.config
-fi
-if [[ `grep -c "CONFIG_TARGET_x86=y" ${Home}/.config` -eq '1' ]]; then
-	sed -i '/IMAGES_GZIP/d' "${Home}/.config"
-	echo -e "\nCONFIG_TARGET_IMAGES_GZIP=y" >> "${Home}/.config"
-fi
-if [[ `grep -c "CONFIG_TARGET_rockchip=y" ${Home}/.config` -eq '1' ]] || [[ `grep -c "CONFIG_TARGET_armvirt=y" ${Home}/.config` -eq '1' ]] || [[ `grep -c "CONFIG_TARGET_bcm27xx=y" ${Home}/.config` -eq '1' ]]; then
-	sed -i 's/CONFIG_PACKAGE_luci-app-autoupdate=y/# CONFIG_PACKAGE_luci-app-autoupdate is not set/g' ${Home}/.config
-	export REGULAR_UPDATE="false"
-	echo "REGULAR_UPDATE=false" >> $GITHUB_ENV
 fi
 if [[ `grep -c "CONFIG_TARGET_ROOTFS_EXT4FS=y" ${Home}/.config` -eq '1' ]]; then
 	if [[ `grep -c "CONFIG_TARGET_ROOTFS_PARTSIZE" ${Home}/.config` -eq '0' ]]; then
@@ -384,16 +362,20 @@ Diy_chuli() {
 
 sed -i '$ s/exit 0$//' ${Home}/package/base-files/files/etc/rc.local
 echo '
-if [[ `grep -c "coremark" /etc/crontabs/root` -eq "1" ]]; then
-  sed -i "/coremark/d" /etc/crontabs/root
+if [[ `grep -c "coremark" /etc/crontabs/root` -eq '1' ]]; then
+  sed -i '/coremark/d' /etc/crontabs/root
 fi
 /etc/init.d/network restart
 /etc/init.d/uhttpd restart
 exit 0
 ' >> ${Home}/package/base-files/files/etc/rc.local
 
+if [[ "${REPO_BRANCH}" == "19.07" ]]; then
+	sed -i 's/PATCHVER:=4.9/PATCHVER:=4.14/g' target/linux/*/Makefile
+	sed -i 's/PATCHVER:=4.19/PATCHVER:=4.14/g' target/linux/*/Makefile
+fi
 
-if [[ "${REPO_BRANCH}" == "main" ]] || [[ "${REPO_BRANCH}" == "master" ]]; then
+if [[ "${REPO_BRANCH}" == "19.07" ]] || [[ "${REPO_BRANCH}" == "master" ]]; then
 	if [[ "${TARGET_BOARD}" == "x86" ]]; then
 		cp -Rf "${Home}"/build/common/Custom/DRM-I915 target/linux/x86/DRM-I915
 		for X in $(ls -1 target/linux/x86 | grep "config-"); do echo -e "\n$(cat target/linux/x86/DRM-I915)" >> target/linux/x86/${X}; done
@@ -401,7 +383,7 @@ if [[ "${REPO_BRANCH}" == "main" ]] || [[ "${REPO_BRANCH}" == "master" ]]; then
 fi
 
 if [[ `grep -c "CONFIG_PACKAGE_ntfs-3g=y" ${Home}/.config` -eq '1' ]]; then
-	mkdir -p files/etc/hotplug.d/block && curl -fsSL  https://raw.githubusercontent.com/shidahuilang/package/usb/block/10-mount > files/etc/hotplug.d/block/10-mount
+	mkdir -p files/etc/hotplug.d/block && curl -fsSL  https://raw.githubusercontent.com/shidahuilang/openwrt-package/usb/block/10-mount > files/etc/hotplug.d/block/10-mount
 fi
 
 
@@ -436,9 +418,6 @@ if [[ "${BY_INFORMATION}" == "true" ]]; then
 	if [[ `grep -c "CONFIG_PACKAGE_luci-i18n-qbittorrent-zh-cn=y" ${Home}/.config` -eq '0' ]]; then
 		sed -i '/qbittorrent/d' Plug-in
 	fi
-	if [[ `grep -c "CONFIG_PACKAGE_luci-app-passwall2=y" ${Home}/.config` -eq '0' ]]; then
-		sed -i '/luci-app-passwall2/d' Plug-in
-	fi
 	sed -i '/INCLUDE/d' Plug-in > /dev/null 2>&1
 	sed -i '/=m/d' Plug-in > /dev/null 2>&1
 	sed -i 's/CONFIG_PACKAGE_/、/g' Plug-in
@@ -451,10 +430,38 @@ if [[ "${BY_INFORMATION}" == "true" ]]; then
         sed -i 's|[[:space:]]||g; s|^.||' CPU && sed -i 's|CPU||g; s|pucores:||' CPU
         CPUNAME="$(awk 'NR==1' CPU)" && CPUCORES="$(awk 'NR==2' CPU)"
         rm -rf CPU
-fi
 
+	if [[ `grep -c "KERNEL_PATCHVER:=" ${Home}/target/linux/${TARGET_BOARD}/Makefile` -eq '1' ]]; then
+		PATCHVE="$(egrep -o 'KERNEL_PATCHVER:=[0-9]+\.[0-9]+' ${Home}/target/linux/${TARGET_BOARD}/Makefile |cut -d "=" -f2)"
+	elif [[ `grep -c "KERNEL_PATCHVER=" ${Home}/target/linux/${TARGET_BOARD}/Makefile` -eq '1' ]]; then
+		PATCHVE="$(egrep -o 'KERNEL_PATCHVER=[0-9]+\.[0-9]+' ${Home}/target/linux/${TARGET_BOARD}/Makefile |cut -d "=" -f2)"
+	else
+		PATCHVER="unknown"
+	fi
+	if [[ -n ${PATCHVE} ]]; then
+		if [[ -f ${Home}/include/kernel-${PATCHVE} ]]; then
+			PATCHVER=$(egrep -o "${PATCHVE}.[0-9]+" ${Home}/include/kernel-${PATCHVE})
+		else
+			PATCHVER=$(egrep -o "${PATCHVE}.[0-9]+" ${Home}/include/kernel-version.mk)
+		fi
+	fi
+	if [[ "${Modelfile}" == "openwrt_amlogic" ]]; then
+		[[ -e $GITHUB_WORKSPACE/amlogic_openwrt ]] && source $GITHUB_WORKSPACE/amlogic_openwrt
+		[[ "${amlogic_kernel}" == "5.12.12_5.4.127" ]] && {
+			curl -fsSL https://raw.githubusercontent.com/ophub/amlogic-s9xxx-openwrt/main/.github/workflows/build-openwrt-lede.yml > open.yml
+			Make_ker="$(cat open.yml | grep ./make | cut -d "k" -f3 | sed s/[[:space:]]//g)"
+			TARGET_kernel="${Make_ker}"
+			TARGET_model="${amlogic_model}"
+		} || {
+			TARGET_kernel="${amlogic_kernel}"
+			TARGET_model="${amlogic_model}"
+		}
+	fi
+fi
 rm -rf ${Home}/files/{README,README.md}
 }
+
+
 
 ################################################################################################################
 # 公告
@@ -483,10 +490,14 @@ echo
 echo
 }
 
+
 ################################################################################################################
 # 编译信息
 ################################################################################################################
 Diy_xinxi() {
+if [[ "${TARGET_PROFILE}" =~ (friendlyarm_nanopi-r2s|friendlyarm_nanopi-r4s|armvirt) ]]; then
+	REGULAR_UPDATE="false"
+fi
 echo
 TIME b "编译源码: ${CODE}"
 TIME b "源码链接: ${REPO_URL}"
@@ -504,7 +515,7 @@ TIME b "仓库地址: ${Github}"
 TIME b "启动编号: #${Run_number}（${CangKu}仓库第${Run_number}次启动[${Run_workflow}]工作流程）"
 TIME b "编译时间: ${Compte}"
 [[ "${Modelfile}" == "openwrt_amlogic" ]] && {
-	TIME g "友情提示：您当前使用【${Modelfile}】文件夹编译【晶晨系列】固件"
+	TIME g "友情提示：您当前使用【${Modelfile}】文件夹编译【${TARGET_model}】固件"
 } || {
 	TIME g "友情提示：您当前使用【${Modelfile}】文件夹编译【${TARGET_PROFILE}】固件"
 }
@@ -526,14 +537,9 @@ else
 	TIME r "上传BIN文件夹(固件+IPK): 关闭"
 fi
 if [[ ${UPLOAD_COWTRANSFER} == "true" ]]; then
-	TIME y "上传固件至【奶牛快传】: 开启"
+	TIME y "上传固件至【奶牛快传】和【WETRANSFER】: 开启"
 else
-	TIME r "上传固件至【奶牛快传】: 关闭"
-fi
-if [[ ${UPLOAD_WETRANSFER} == "true" ]]; then
-	TIME y "上传固件至【WETRANSFER】: 开启"
-else
-	TIME r "上传固件至【WETRANSFER】: 关闭"
+	TIME r "上传固件至【奶牛快传】和【WETRANSFER】: 关闭"
 fi
 if [[ ${UPLOAD_RELEASE} == "true" ]]; then
 	TIME y "发布固件: 开启"
@@ -568,7 +574,6 @@ if [[ ${REGULAR_UPDATE} == "true" ]]; then
 	TIME b "固件版本: ${Openwrt_Version}"
 	TIME b "云端路径: ${Github_UP_RELEASE}"
 	TIME g "《编译成功后，会自动把固件发布到指定地址，然后才会生成云端路径》"
-	TIME g "《普通的那个发布固件跟云端的发布路径是两码事，如果你不需要普通发布的可以不用打开发布功能》"
 	echo
 else
 	echo
