@@ -76,9 +76,9 @@ find . -name 'UnblockNeteaseMusic-Go' -o -name 'UnblockNeteaseMusic' -o -name 'l
 DISTRIB="$(egrep -o "DISTRIB_DESCRIPTION='.* '" $ZZZ |sed -r "s/DISTRIB_DESCRIPTION='(.*) '/\1/")"
 [[ -n "${DISTRIB}" ]] && sed -i "s/${DISTRIB}/OpenWrt/g" $ZZZ
 
-## git clone https://github.com/shidahuilang/openwrt-passwall package/luci-app-passwall
-git clone https://github.com/xiaorouji/openwrt-passwall package/openwrt-passwall
-git clone https://github.com/xiaorouji/openwrt-passwall2 package/luci-app-passwall2
+git clone https://github.com/shidahuilang/openwrt-passwall package/luci-app-passwall
+# git clone https://github.com/xiaorouji/openwrt-passwall package/openwrt-passwall
+# git clone https://github.com/xiaorouji/openwrt-passwall2 package/luci-app-passwall2
 ## rm -rf package/luci-app-passwall/{v2ray-core,v2ray-plugin,v2ray-geodata,xray-core,xray-plugin}
 git clone https://github.com/fw876/helloworld package/luci-app-ssr-plus
 rm -rf package/luci-app-ssr-plus/{dns2socks,microsocks,ipt2socks,pdnsd-alt}
@@ -112,7 +112,7 @@ find . -name 'luci-app-wol' | xargs -i rm -rf {}
 # 全部作者源码公共diy.sh文件
 ################################################################################################################
 Diy_all() {
-git clone --depth 1 -b "${REPO_BRANCH}" https://github.com/shidahuilang/openwrt-package "${Home}"/openwrt-package
+git clone --depth 1 -b "${REPO_BRANCH}" https://github.com/shidahuilang/package "${Home}"/openwrt-package
 cp -Rf "${Home}"/openwrt-package/* "${Home}" && rm -rf "${Home}"/openwrt-package
 
 if [[ ${REGULAR_UPDATE} == "true" ]]; then
@@ -401,7 +401,7 @@ if [[ "${REPO_BRANCH}" == "main" ]] || [[ "${REPO_BRANCH}" == "master" ]]; then
 fi
 
 if [[ `grep -c "CONFIG_PACKAGE_ntfs-3g=y" ${Home}/.config` -eq '1' ]]; then
-	mkdir -p files/etc/hotplug.d/block && curl -fsSL  https://raw.githubusercontent.com/shidahuilang/openwrt-package/usb/block/10-mount > files/etc/hotplug.d/block/10-mount
+	mkdir -p files/etc/hotplug.d/block && curl -fsSL  https://raw.githubusercontent.com/shidahuilang/package/usb/block/10-mount > files/etc/hotplug.d/block/10-mount
 fi
 
 
