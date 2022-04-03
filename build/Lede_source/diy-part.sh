@@ -23,7 +23,7 @@ uci set system.@system[0].hostname='OpenWrt'                                # �
 #sed -i 's/\/bin\/login/\/bin\/login -f root/' /etc/config/ttyd             # 设置ttyd免帐号登录，如若开启，进入OPENWRT后可能要重启一次才生效
 EOF
 
-sed -i 's/luci-theme-bootstrap/luci-theme-infinityfreedom/g' feeds/luci/collections/luci/Makefile            # 选择argon为默认主题
+sed -i 's/luci-theme-bootstrap/luci-theme-opentomato/g' feeds/luci/collections/luci/Makefile            # 选择argon为默认主题
 #sed -i "/uci commit luci/i\uci set luci.main.mediaurlbase=/luci-static/neobird" package/lean/default-settings/files/zzz-default-settings
 sed -i "s/OpenWrt /大灰狼 $(TZ=UTC-8 date "+%Y.%m.%d") @ OpenWrt /g" $ZZZ                           # 增加个性名字 ${Author} 默认为你的github帐号
 
