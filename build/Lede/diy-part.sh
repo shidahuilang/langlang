@@ -88,7 +88,9 @@ sed -i 's/"带宽监控"/"监控"/g' `egrep "带宽监控" -rl ./`
 sed -i 's/"设置向导"/"向导"/g' `egrep "设置向导" -rl ./`
 
 git clone -b master --depth 1 https://github.com/vernesong/OpenClash package/luci-app-openclash
-mkdir -p luci-app-openclash/root/etc/openclash/custom/openclash_custom_rules.list
+mkdir -p luci-app-openclash/root/etc/openclash
+cd /luci-app-openclash/root/etc/openclash
+touch openclash_custom_rules.list
 curl -fsSL  https://raw.githubusercontent.com/shidahuilang/openwrt-package/usb/argon/openclash_custom_rules.list > luci-app-openclash/root/etc/openclash/custom/openclash_custom_rules.list
 sed -i '/openclash.config.enable/{N;d;}' luci-app-openclash/root/etc/uci-defaults/luci-openclash #OpenClash恢复更新系统开机自启动
 
