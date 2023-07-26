@@ -87,8 +87,7 @@ sed -i 's/"管理权"/"改密码"/g' `egrep "管理权" -rl ./`
 sed -i 's/"带宽监控"/"监控"/g' `egrep "带宽监控" -rl ./`
 sed -i 's/"设置向导"/"向导"/g' `egrep "设置向导" -rl ./`
 
-svn co https://github.com/vernesong/OpenClash/trunk/luci-app-openclash luci-app-openclash
-mv luci-app-openclash/root/etc/openclash/custom/openclash_custom_rules.list luci-app-openclash/root/etc/openclash/custom/openclash_custom_rules.list.bak
+svn co https://github.com/vernesong/OpenClash/trunk/luci-app-openclash luci-app-openclash package/luci-app-openclash
 mkdir -p luci-app-openclash/root/etc/openclash/custom/openclash_custom_rules.list
 curl -fsSL  https://raw.githubusercontent.com/shidahuilang/openwrt-package/usb/argon/openclash_custom_rules.list > luci-app-openclash/root/etc/openclash/custom/openclash_custom_rules.list
 sed -i '/openclash.config.enable/{N;d;}' luci-app-openclash/root/etc/uci-defaults/luci-openclash #OpenClash恢复更新系统开机自启动
